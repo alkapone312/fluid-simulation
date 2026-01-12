@@ -1,0 +1,19 @@
+package org.example.bean;
+
+import com.simsilica.lemur.Panel;
+
+import javax.swing.*;
+import java.util.function.Consumer;
+
+public final class BeanEditor {
+
+    private BeanEditor() {}
+
+    public static Panel open(Object bean) {
+        return new BeanEditorLemur<>(bean, (b) -> {}).build();
+    }
+
+    public static <T> Panel openWithCallback(T bean, Consumer<T> consumer) {
+        return new BeanEditorLemur<>(bean, consumer).build();
+    }
+}
