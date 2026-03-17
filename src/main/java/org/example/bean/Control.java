@@ -17,4 +17,3 @@ public @interface Control {
     double max() default 0.0;
     double step() default 1.0;
 }
-

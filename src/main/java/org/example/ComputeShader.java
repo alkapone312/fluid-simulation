@@ -1,7 +1,8 @@
 package org.example;
 
 import org.lwjgl.opengl.GL43;
-import java.nio.FloatBuffer;
+
+import java.nio.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,10 +61,25 @@ public class ComputeShader {
         GL43.glUniform2f(loc, x, y);
     }
 
-    public void setData(int binding, FloatBuffer data) {
+    public void setData(int binding, Buffer data) {
         int bufferId = GL43.glGenBuffers();
         GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, bufferId);
-        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, data, GL43.GL_DYNAMIC_COPY);
+        if (data instanceof FloatBuffer fb) {
+            GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, fb, GL43.GL_DYNAMIC_COPY);
+        } else if (data instanceof IntBuffer ib) {
+            GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, ib, GL43.GL_DYNAMIC_COPY);
+        } else if (data instanceof ByteBuffer bb) {
+            GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, bb, GL43.GL_DYNAMIC_COPY);
+        } else if (data instanceof ShortBuffer sb) {
+            GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, sb, GL43.GL_DYNAMIC_COPY);
+        } else if (data instanceof LongBuffer lb) {
+            GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, lb, GL43.GL_DYNAMIC_COPY);
+        } else {
+            throw new IllegalArgumentException(
+                "Unsupported buffer type: " + data.getClass()
+            );
+        }
+
         int size = GL43.glGetBufferParameteri(
             GL43.GL_SHADER_STORAGE_BUFFER,
             GL43.GL_BUFFER_SIZE

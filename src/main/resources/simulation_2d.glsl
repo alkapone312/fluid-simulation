@@ -1,6 +1,6 @@
 #version 430
 
-layout(local_size_x = 1) in;
+layout(local_size_x = 64) in;
 
 layout(std430, binding = 0) buffer PositionsBuffer {
     vec2 positions[];
@@ -58,22 +58,22 @@ float SpikyKernelPow3(float dst, float radius)
 
 float DerivativeSpikyPow3(float dst, float radius)
 {
-    if (dst <= radius) {
+    if (dst < radius) {
         float v = radius - dst;
         return -v * v * SpikyPow3DerivativeScalingFactor;
     }
 
-    return 0;
+    return 0.0;
 }
 
 float DerivativeSpikyPow2(float dst, float radius)
 {
-    if (dst <= radius) {
+    if (dst < radius) {
         float v = radius - dst;
         return -v * SpikyPow2DerivativeScalingFactor;
     }
 
-    return 0;
+    return 0.0;
 }
 
 float SmoothingKernelPoly6(float dst, float radius)
@@ -83,7 +83,7 @@ float SmoothingKernelPoly6(float dst, float radius)
         float v = radius * radius - dst * dst;
         return v * v * v * Poly6ScalingFactor;
     }
-    return 0;
+    return 0.0;
 }
 
 float DensityKernel(float dst, float radius)
@@ -108,7 +108,7 @@ float NearDensityDerivative(float dst, float radius)
 
 float ViscosityKernel(float dst, float radius)
 {
-    return SmoothingKernelPoly6(dst, smoothingRadius);
+    return SmoothingKernelPoly6(dst, radius);
 }
 
 // ===========================================================
@@ -153,7 +153,7 @@ float PressureFromDensity(float density)
 
 float NearPressureFromDensity(float nearDensity)
 {
-    return nearPressureMultiplier * (nearDensity - targetDensity);
+    return nearPressureMultiplier * nearDensity;
 }
 
 vec2 CalculatePressureForce(uint i)
@@ -223,8 +223,6 @@ vec2 CalculateViscosity(uint i)
 // MAIN
 // ===========================================================
 
-const float epsilon = 0.01;
-
 void HandleCollisions(uint particleIndex)
 {
     vec2 pos = vec2(positions[particleIndex]);
@@ -255,22 +253,32 @@ void main() {
     if (task == 1) {
         velocities[i] += gravity * deltaTime;
         predictedPositions[i] = positions[i] + velocities[i] / 120;
+
+        return;
     }
 
     if (task == 2) {
         densities[i] = CalculateDensity(i);
+
+        return;
     }
 
     if (task == 3) {
         velocities[i] += CalculatePressureForce(i);
+
+        return;
     }
 
     if (task == 4) {
         velocities[i] += CalculateViscosity(i);
+
+        return;
     }
 
-    if (task == 4) {
+    if (task == 5) {
         positions[i] += velocities[i] * deltaTime;
         HandleCollisions(i);
+
+        return;
     }
 }

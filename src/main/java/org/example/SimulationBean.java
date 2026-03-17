@@ -4,21 +4,32 @@ import org.example.bean.Control;
 import org.example.bean.ControlType;
 
 public class SimulationBean {
-    private float gravityForce = 10.0f;
+    private int iterationsPerFrame = 1;
 
-    private float smoothingRadius = 2f;
+    private float gravityForce = 12.0f;
 
-    private float pressureMultiplier = 25.5f;
+    private float smoothingRadius = 0.35f;
 
-    private float nearPressureMultiplier = 35.0f;
+    private float pressureMultiplier = 120.0f;
 
-    private float targetDensity = 5f;
+    private float nearPressureMultiplier = 20f;
 
-    private float viscosityStrength = 0.5f;
+    private float targetDensity = 60f;
 
-    private float boundsX = 20f;
+    private float viscosityStrength = 0.05f;
 
-    private float boundsY = 20f;
+    private float boundsX = 16f;
+
+    private float boundsY = 9f;
+
+    @Control(type = ControlType.RANGE, min = 0, max = 10.0, step = 1)
+    public int getIterationsPerFrame() {
+        return iterationsPerFrame;
+    }
+
+    public void setIterationsPerFrame(int iterationsPerFrame) {
+        this.iterationsPerFrame = iterationsPerFrame;
+    }
 
     @Control(type = ControlType.RANGE, min = 0.1, max = 10.0, step = 0.1)
     public float getSmoothingRadius() {
@@ -47,7 +58,7 @@ public class SimulationBean {
         this.nearPressureMultiplier = nearPressureMultiplier;
     }
 
-    @Control(type = ControlType.RANGE, min = 0.1, max = 10.0, step = 0.1)
+    @Control(type = ControlType.RANGE, min = 0.1, max = 1000.0, step = 0.1)
     public float getTargetDensity() {
         return targetDensity;
     }
@@ -83,7 +94,7 @@ public class SimulationBean {
         this.gravityForce = gravityForce;
     }
 
-    @Control(type = ControlType.RANGE, min = 0.0, max = 10.0, step = 0.1)
+    @Control(type = ControlType.RANGE, min = 0.0, max = 1.0, step = 0.01)
     public float getViscosityStrength() {
         return viscosityStrength;
     }
