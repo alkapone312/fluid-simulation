@@ -18,9 +18,11 @@ public class SimulationBean {
 
     private float viscosityStrength = 0.05f;
 
-    private float boundsX = 16f;
+    private float boundsX = 4f;
 
-    private float boundsY = 9f;
+    private float boundsY = 3f;
+
+    private float boundsZ = 3f;
 
     @Control(type = ControlType.RANGE, min = 0, max = 10.0, step = 1)
     public int getIterationsPerFrame() {
@@ -83,6 +85,15 @@ public class SimulationBean {
 
     public void setBoundsY(float boundsY) {
         this.boundsY = boundsY;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0.1, max = 100.0, step = 0.1)
+    public float getBoundsZ() {
+        return boundsZ;
+    }
+
+    public void setBoundsZ(float boundsZ) {
+        this.boundsZ = boundsZ;
     }
 
     @Control(type = ControlType.RANGE, min = 0.0, max = 10.0, step = 0.1)

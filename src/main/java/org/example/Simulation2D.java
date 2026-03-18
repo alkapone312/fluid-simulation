@@ -6,8 +6,6 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
-import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.simsilica.lemur.GuiGlobals;
@@ -77,8 +75,6 @@ public class Simulation2D extends SimpleApplication {
         panel.setLocalTranslation(cam.getLocation().x, cam.getLocation().y, cam.getLocation().z);
         panel.setLocalScale(0.005f);
         rootNode.attachChild(panel);
-        Quad quad = new Quad(bean.getBoundsX(), bean.getBoundsY());
-        quad.setMode(Mesh.Mode.Lines);
         setupCameraAndLight();
         setupParticles();
 
@@ -110,7 +106,7 @@ public class Simulation2D extends SimpleApplication {
         particleDensities.flip();
 
         try {
-            computeShader = new ComputeShader(new String(getClass().getResourceAsStream("/simulation_2d.glsl").readAllBytes()));
+            computeShader = new ComputeShader(new String(getClass().getResourceAsStream("compute/simulation_2d.glsl").readAllBytes()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -167,9 +163,9 @@ public class Simulation2D extends SimpleApplication {
         computeShader.setUniform("task", 5);
         computeShader.dispatch(groups, 1, 1);
 
-        FloatBuffer positions = computeShader.getData(0);
-        FloatBuffer velocities = computeShader.getData(2);
-        FloatBuffer densities = computeShader.getData(3);
+        FloatBuffer positions = computeShader.getData(0, FloatBuffer.class);
+        FloatBuffer velocities = computeShader.getData(2, FloatBuffer.class);
+        FloatBuffer densities = computeShader.getData(3, FloatBuffer.class);
 
         for (int i = 0; i < numParticles; i++) {
             float density = densities.get();

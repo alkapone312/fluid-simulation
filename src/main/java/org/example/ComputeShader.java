@@ -7,6 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ComputeShader {
+    public enum IntegerType {
+        SIGNED,
+        UNSIGNED
+    }
+
     private final int programId;
     private final Map<String, Integer> uniformCache = new HashMap<>();
     private final Map<Integer, Integer> ssbos = new HashMap<>();
@@ -46,8 +51,14 @@ public class ComputeShader {
         GL43.glUniform1f(loc, value);
     }
 
-    public void setUniform(String name, int value) {
+    public void setUniform(String name, int value, IntegerType type) {
         int loc = uniformLocation(name);
+        if (type == IntegerType.UNSIGNED) {
+            GL43.glUniform1ui(loc, value);
+
+            return;
+        }
+
         GL43.glUniform1i(loc, value);
     }
 
@@ -61,8 +72,10 @@ public class ComputeShader {
         GL43.glUniform2f(loc, x, y);
     }
 
+    private HashMap<Integer, Integer> ssboBindings = new HashMap<>();
+
     public void setData(int binding, Buffer data) {
-        int bufferId = GL43.glGenBuffers();
+        int bufferId = ssboBindings.computeIfAbsent(binding, (a) -> GL43.glGenBuffers());
         GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, bufferId);
         if (data instanceof FloatBuffer fb) {
             GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, fb, GL43.GL_DYNAMIC_COPY);
@@ -90,16 +103,46 @@ public class ComputeShader {
         ssbos.put(binding, bufferId);
     }
 
-    public FloatBuffer getData(int binding) {
-        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, ssbos.get(binding));
-        FloatBuffer buffer = GL43.glMapBuffer(GL43.GL_SHADER_STORAGE_BUFFER, GL43.GL_READ_ONLY).asFloatBuffer();
-        FloatBuffer copy = FloatBuffer.allocate(buffer.remaining());
-        copy.put(buffer);
-        copy.flip();
+    @SuppressWarnings("unchecked")
+    public <T extends Buffer> T getData(int binding, Class<T> bufferType) {
+        Integer bufferId = ssbos.get(binding);
+        if (bufferId == null) {
+            throw new IllegalArgumentException("No SSBO bound to binding: " + binding);
+        }
+
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, bufferId);
+
+        // Map the GPU memory to a ByteBuffer
+        ByteBuffer mappedBuffer = GL43.glMapBuffer(GL43.GL_SHADER_STORAGE_BUFFER, GL43.GL_READ_ONLY);
+
+        T result;
+
+        if (bufferType == FloatBuffer.class) {
+            FloatBuffer view = mappedBuffer.asFloatBuffer();
+            FloatBuffer copy = FloatBuffer.allocate(view.remaining());
+            copy.put(view);
+            copy.flip();
+            result = (T) copy;
+        } else if (bufferType == IntBuffer.class) {
+            IntBuffer view = mappedBuffer.asIntBuffer();
+            IntBuffer copy = IntBuffer.allocate(view.remaining());
+            copy.put(view);
+            copy.flip();
+            result = (T) copy;
+        } else if (bufferType == ByteBuffer.class) {
+            ByteBuffer copy = ByteBuffer.allocate(mappedBuffer.remaining());
+            copy.put(mappedBuffer);
+            copy.flip();
+            result = (T) copy;
+        } else {
+            GL43.glUnmapBuffer(GL43.GL_SHADER_STORAGE_BUFFER);
+            throw new UnsupportedOperationException("Unsupported buffer type: " + bufferType.getName());
+        }
+
         GL43.glUnmapBuffer(GL43.GL_SHADER_STORAGE_BUFFER);
         GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
 
-        return copy;
+        return result;
     }
 
     public void cleanup() {
