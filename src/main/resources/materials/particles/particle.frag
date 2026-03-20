@@ -1,0 +1,13 @@
+in vec3 color;
+
+out vec4 fragColor;
+
+void main() {
+    // This makes the square points look like circles
+    vec2 circCoord = 2.0 * gl_PointCoord - 1.0;
+    if (dot(circCoord, circCoord) > 1.0) {
+        discard;
+    }
+
+    fragColor = vec4(color, 1.0); // Yellow circle
+}

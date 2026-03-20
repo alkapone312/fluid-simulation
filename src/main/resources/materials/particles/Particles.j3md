@@ -1,0 +1,15 @@
+MaterialDef Particles {
+    MaterialParameters {
+        Vector4 Color
+        Float PointSize : 5.0
+    }
+
+    Technique Default {
+        VertexShader GLSL430: materials/particles/particle.vert
+        FragmentShader GLSL430: materials/particles/particle.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+        }
+    }
+}

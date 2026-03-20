@@ -27,10 +27,6 @@ public class Simulation3D extends SimpleApplication {
 
     private ComputeShader computeShader;
 
-    private Geometry[] particles;
-
-    private Geometry particleGeometry;
-
     private SimulationBean bean = new SimulationBean();
 
     public static void main(String[] args) {
@@ -56,23 +52,16 @@ public class Simulation3D extends SimpleApplication {
     }
 
     private void setupParticles() {
-        particles = new Geometry[numParticles];
+        Mesh mesh = new Mesh();
+        mesh.setMode(Mesh.Mode.Points);
 
-        Sphere sphere = new Sphere(10, 10, 0.05f);
-
-        for (int i = 0; i < numParticles; i++) {
-            Geometry g = new Geometry("Particle_" + i, sphere);
-            Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-            //mat.setColor("Color", ColorRGBA.Red);
-            mat.setBoolean("UseMaterialColors", true);
-            mat.setColor("Diffuse", ColorRGBA.Yellow);
-            mat.setColor("Specular", ColorRGBA.White);
-            mat.setFloat("Shininess", 1f);
-            g.setMaterial(mat);
-            g.center();
-            rootNode.attachChild(g);
-            particles[i] = g;
-        }
+        float[] placeholder = new float[numParticles * 3];
+        mesh.setBuffer(VertexBuffer.Type.Position, 3, placeholder);
+        mesh.setStatic();
+        Geometry particleGeometry = new Geometry("Particles", mesh);
+        Material mat = new Material(assetManager, "materials/particles/Particles.j3md");
+        particleGeometry.setMaterial(mat);
+        rootNode.attachChild(particleGeometry);
     }
 
     @Override
@@ -128,8 +117,8 @@ public class Simulation3D extends SimpleApplication {
 
         computeShader = ComputeShaderLoader.load("compute/simulation_3d.glsl");
         computeShader.setData(0, particlePositions);
-        computeShader.setData(1, particlePredictedPositions);
-        computeShader.setData(2, velocitiesBuffer);
+        computeShader.setData(1, velocitiesBuffer);
+        computeShader.setData(2, particlePredictedPositions);
         computeShader.setData(3, particleDensities);
         computeShader.setData(4, spatialIndices);
         computeShader.setData(5, spatialOffsets);
@@ -202,32 +191,11 @@ public class Simulation3D extends SimpleApplication {
         computeShader.dispatch(groups, 1, 1);
 
         FloatBuffer positions = computeShader.getData(0, FloatBuffer.class);
-        FloatBuffer velocities = computeShader.getData(2, FloatBuffer.class);
+        FloatBuffer velocities = computeShader.getData(1, FloatBuffer.class);
         FloatBuffer densities = computeShader.getData(3, FloatBuffer.class);
         IntBuffer indices = computeShader.getData(4, IntBuffer.class);
         IntBuffer offsets = computeShader.getData(5, IntBuffer.class);
 //        java.util.stream.IntStream.range(0, indices.limit()).filter(i -> i % 4 == 2).map(i -> indices.array()[i]).toArray()
-        for (int i = 0; i < numParticles; i++) {
-            float density = densities.get();
-            float nearDensity = densities.get();
-            float x = positions.get();
-            float y = positions.get();
-            float z = positions.get();
-            float w = positions.get();
-            particles[i].setLocalTranslation(x, y, z);
-            float velocityX = velocities.get();
-            float velocityY = velocities.get();
-            float velocityZ = velocities.get();
-            float velocityW = velocities.get();
-            float speed = (float) Math.sqrt(velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ);
-            float maxSpeed = 10.0f;
-            float t = Math.min(speed / maxSpeed, 1.0f);
-            float red = t;
-            float green = 0.0f;
-            float blue = 1.0f - t;
-
-            particles[i].getMaterial().setColor("Diffuse", new ColorRGBA(red, green, blue, 1.0f));
-        }
     }
 
     private void sortAndCalculateOffsetsCPU() {

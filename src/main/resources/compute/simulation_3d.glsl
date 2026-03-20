@@ -8,12 +8,12 @@ layout(std430, binding = 0) buffer PositionsBuffer {
     vec3 positions[];
 };
 
-layout(std430, binding = 1) buffer PredictedPositionsBuffer {
-    vec3 predictedPositions[];
+layout(std430, binding = 1) buffer VelocitiesBuffer {
+    vec3 velocities[];
 };
 
-layout(std430, binding = 2) buffer VelocitiesBuffer {
-    vec3 velocities[];
+layout(std430, binding = 2) buffer PredictedPositionsBuffer {
+    vec3 predictedPositions[];
 };
 
 layout(std430, binding = 3) buffer DensitiesBuffer {
@@ -151,16 +151,12 @@ vec3 CalculatePressureForce(uint x)
 {
     vec3 pos = vec3(predictedPositions[x]);
     float density = densities[x].x;
-    float densityNear = densities[x].y;
+    float nearDensity = densities[x].y;
 
     float pressure = PressureFromDensity(density);
-    float nearPressure = NearPressureFromDensity(densityNear);
+    float nearPressure = NearPressureFromDensity(nearDensity);
 
     vec3 pressureForce = vec3(0.0);
-
-//    for (uint neighbourIndex = 0u; neighbourIndex < numParticles; neighbourIndex++) {
-//
-//    }
 
     // Neighbour search
     ivec3 originCell = GetCell3D(pos, smoothingRadius);
@@ -236,6 +232,8 @@ vec3 CalculateViscosity(uint x)
             if (neighbourIndex == x) continue;
 
             vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
+            float neighbourDensity = densities[neighbourIndex].x;
+
             vec3 offsetToNeighbour = neighbourPos - pos;
             float sqrDstToNeighbour = dot(offsetToNeighbour, offsetToNeighbour);
 
@@ -243,7 +241,7 @@ vec3 CalculateViscosity(uint x)
 
             float dst = sqrt(sqrDstToNeighbour);
             vec3 neighbourVelocity = vec3(velocities[neighbourIndex]);
-            viscosityForce += (neighbourVelocity - velocity) * ViscosityKernel(dst, smoothingRadius);
+            viscosityForce += (neighbourVelocity - velocity) * ViscosityKernel(dst, smoothingRadius) / neighbourDensity;
 
             // CODE
         }
