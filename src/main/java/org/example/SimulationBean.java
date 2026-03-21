@@ -4,7 +4,7 @@ import org.example.bean.Control;
 import org.example.bean.ControlType;
 
 public class SimulationBean {
-    private int iterationsPerFrame = 1;
+    private int iterationsPerFrame = 0;
 
     private float gravityForce = 12.0f;
 
@@ -16,13 +16,13 @@ public class SimulationBean {
 
     private float targetDensity = 60f;
 
-    private float viscosityStrength = 0.05f;
+    private float viscosityStrength = 1f;
 
-    private float boundsX = 4f;
+    private float boundsX = 5f;
 
-    private float boundsY = 3f;
+    private float boundsY = 5f;
 
-    private float boundsZ = 3f;
+    private float boundsZ = 5f;
 
     @Control(type = ControlType.RANGE, min = 0, max = 10.0, step = 1)
     public int getIterationsPerFrame() {
@@ -105,7 +105,7 @@ public class SimulationBean {
         this.gravityForce = gravityForce;
     }
 
-    @Control(type = ControlType.RANGE, min = 0.0, max = 1.0, step = 0.01)
+    @Control(type = ControlType.RANGE, min = 0.0, max = 30.0, step = 0.01)
     public float getViscosityStrength() {
         return viscosityStrength;
     }

@@ -1,14 +1,16 @@
 package org.example;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.bounding.BoundingBox;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer;
-import com.jme3.scene.shape.Sphere;
+import com.jme3.scene.debug.WireBox;
 import com.jme3.system.AppSettings;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
@@ -21,9 +23,7 @@ import java.util.Arrays;
 
 public class Simulation3D extends SimpleApplication {
 
-    static int frameCount = 0;
-
-    private int numParticles = 20 * 20 * 20;
+    private int numParticles = 30 * 30 * 15;
 
     private ComputeShader computeShader;
 
@@ -56,12 +56,34 @@ public class Simulation3D extends SimpleApplication {
         mesh.setMode(Mesh.Mode.Points);
 
         float[] placeholder = new float[numParticles * 3];
+        mesh.setBound(new BoundingBox(Vector3f.ZERO, 1000f, 1000f, 1000f));
         mesh.setBuffer(VertexBuffer.Type.Position, 3, placeholder);
         mesh.setStatic();
         Geometry particleGeometry = new Geometry("Particles", mesh);
         Material mat = new Material(assetManager, "materials/particles/Particles.j3md");
+        particleGeometry.setCullHint(Spatial.CullHint.Never);
         particleGeometry.setMaterial(mat);
         rootNode.attachChild(particleGeometry);
+    }
+
+
+    private void setupBoundaryFrame() {
+        float x = bean.getBoundsX() * 0.5f;
+        float y = bean.getBoundsY() * 0.5f;
+        float z = bean.getBoundsZ() * 0.5f;
+
+        WireBox wireBox = new WireBox(x, y, z);
+        wireBox.setLineWidth(2f);
+
+        Geometry frame = new Geometry("BoundaryFrame", wireBox);
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setColor("Color", ColorRGBA.White);
+
+        frame.setMaterial(mat);
+        frame.setCullHint(Spatial.CullHint.Never);
+
+        rootNode.attachChild(frame);
     }
 
     @Override
@@ -73,6 +95,7 @@ public class Simulation3D extends SimpleApplication {
         guiNode.attachChild(panel);
         setupCameraAndLight();
         setupParticles();
+        setupBoundaryFrame();
 
         FloatBuffer particlePositions = BufferUtils.createFloatBuffer(numParticles * 4);
         FloatBuffer particlePredictedPositions = BufferUtils.createFloatBuffer(numParticles * 4);
@@ -81,16 +104,18 @@ public class Simulation3D extends SimpleApplication {
         IntBuffer spatialIndices = BufferUtils.createIntBuffer(numParticles * 4);
         IntBuffer spatialOffsets = BufferUtils.createIntBuffer(numParticles);
 
-        final float boxSize = 2f;
-        int particlesPerRow = (int) Math.ceil(Math.pow(numParticles, (double) 1 / 3));
-        float spacing = (2 * boxSize) / (particlesPerRow - 1);
+        final float spacing = 3.0f / 19.0f;
+
+        int particlesPerRow = (int) Math.round(Math.pow(numParticles, 1.0/3.0));
+        float dynamicBoxSize = ((particlesPerRow - 1) * spacing) / 2.0f;
         for (int i = 0; i < numParticles; i++) {
             int xIndex = i % particlesPerRow;
             int yIndex = (i / particlesPerRow) % particlesPerRow;
-            int zIndex = i / (particlesPerRow*particlesPerRow);
-            float x = -boxSize + xIndex * spacing;
-            float y = -boxSize + yIndex * spacing;
-            float z = -boxSize + zIndex * spacing;
+            int zIndex = i / (particlesPerRow * particlesPerRow);
+
+            float x = -dynamicBoxSize + xIndex * spacing;
+            float y = -dynamicBoxSize + yIndex * spacing;
+            float z = -dynamicBoxSize + zIndex * spacing;
             particlePositions.put(x);
             particlePositions.put(y);
             particlePositions.put(z);
@@ -156,6 +181,20 @@ public class Simulation3D extends SimpleApplication {
         for (int i = 0 ; i < bean.getIterationsPerFrame(); i++) {
             step(deltaTime);
         }
+
+        Spatial frame = rootNode.getChild("BoundaryFrame");
+
+        if (frame instanceof Geometry) {
+            Geometry geom = (Geometry) frame;
+            WireBox wb = (WireBox) geom.getMesh();
+
+            float x = bean.getBoundsX() * 0.5f;
+            float y = bean.getBoundsY() * 0.5f;
+            float z = bean.getBoundsZ() * 0.5f;
+
+            // Only update if dimensions actually changed
+            wb.updatePositions(x, y, z);
+        }
     }
 
     private void step(float deltaTime) {
@@ -164,7 +203,6 @@ public class Simulation3D extends SimpleApplication {
         computeShader.dispatch(groups, 1, 1);
         computeShader.setUniform("task", 2, ComputeShader.IntegerType.UNSIGNED);
         computeShader.dispatch(groups, 1, 1);
-//        sortAndCalculateOffsetsCPU();
         computeShader.setUniform("task", 3, ComputeShader.IntegerType.UNSIGNED);
         int nextPow2 = Integer.highestOneBit(numParticles) << 1;
         int numStages = Integer.numberOfTrailingZeros(nextPow2);
@@ -176,7 +214,7 @@ public class Simulation3D extends SimpleApplication {
                 computeShader.setUniform("groupWidth", groupWidth, ComputeShader.IntegerType.UNSIGNED);
                 computeShader.setUniform("groupHeight", groupHeight, ComputeShader.IntegerType.UNSIGNED);
                 computeShader.setUniform("stepIndex", j, ComputeShader.IntegerType.UNSIGNED);
-                computeShader.dispatch(nextPow2 / 2, 1, 1);
+                computeShader.dispatch(groups, 1, 1);
             }
         }
         computeShader.setUniform("task", 4, ComputeShader.IntegerType.UNSIGNED);
@@ -189,13 +227,6 @@ public class Simulation3D extends SimpleApplication {
         computeShader.dispatch(groups, 1, 1);
         computeShader.setUniform("task", 8, ComputeShader.IntegerType.UNSIGNED);
         computeShader.dispatch(groups, 1, 1);
-
-        FloatBuffer positions = computeShader.getData(0, FloatBuffer.class);
-        FloatBuffer velocities = computeShader.getData(1, FloatBuffer.class);
-        FloatBuffer densities = computeShader.getData(3, FloatBuffer.class);
-        IntBuffer indices = computeShader.getData(4, IntBuffer.class);
-        IntBuffer offsets = computeShader.getData(5, IntBuffer.class);
-//        java.util.stream.IntStream.range(0, indices.limit()).filter(i -> i % 4 == 2).map(i -> indices.array()[i]).toArray()
     }
 
     private void sortAndCalculateOffsetsCPU() {

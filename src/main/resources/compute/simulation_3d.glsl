@@ -144,7 +144,7 @@ float PressureFromDensity(float density)
 
 float NearPressureFromDensity(float nearDensity)
 {
-    return nearPressureMultiplier * nearDensity;
+    return nearPressureMultiplier * (nearDensity - targetDensity);
 }
 
 vec3 CalculatePressureForce(uint x)
