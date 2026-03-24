@@ -72,31 +72,12 @@ void sort(uint i) {
     }
 }
 
-void calculateOffsets(uint i) {
-    if (i >= numParticles) return;
-
-    uint key = spatialIndices[i].z;
-    uint keyPrev = (i == 0) ? numParticles : spatialIndices[i - 1].z;
-
-    if (key != keyPrev) {
-        spatialOffsets[key] = i;
-    }
-}
-
-void UpdateSpatialHash(uint i)
-{
-    if (i >= numParticles) return;
-    // Reset offsets (using numParticles as a 'null' or 'empty' marker)
-    spatialOffsets[i] = uint(numParticles);
-
-    uint index = i;
-
-    ivec3 cell = GetCell3D(predictedPositions[index].xyz, smoothingRadius);
-    uint hash = HashCell3D(cell);
-    uint key = KeyFromHash(hash, uint(numParticles));
-
-    spatialIndices[i] = uvec3(index, hash, key);
-}
+#define SPATIAL_HASH_OFFSETS spatialOffsets
+#define SPATIAL_HASH_INDICES spatialIndices
+#define SPATIAL_HASH_POSITIONS predictedPositions
+#define SPATIAL_HASH_CELL_SIZE smoothingRadius
+#define SPATIAL_HASH_SIZE numParticles
+DEFINE_SPATIAL_HASH
 
 // ===========================================================
 // SPH
@@ -109,39 +90,23 @@ vec2 CalculateDensity(uint x)
     float nearDensity = 0.0;
     float sqrRadius = smoothingRadius * smoothingRadius;
 
-    // Neighbour search
-    ivec3 originCell = GetCell3D(pos, smoothingRadius);
-    for (int i = 0; i < 27; i ++)
-    {
-        uint hash = HashCell3D(originCell + offsets3D[i]);
-        uint key = KeyFromHash(hash, numParticles);
-        uint currIndex = spatialOffsets[key];
+    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, indexData,
+        uint neighbourIndex = indexData.x;
 
-        while (currIndex < numParticles)
+        vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
+        vec3 offsetToNeighbour = neighbourPos - pos;
+        float sqrDst = dot(offsetToNeighbour, offsetToNeighbour);
+
+        if (sqrDst > sqrRadius) continue;
+
+        float dst = sqrt(sqrDst);
+
+        if (dst < smoothingRadius)
         {
-            uvec3 indexData = uvec3(spatialIndices[currIndex]);
-            currIndex++;
-            if (indexData.z != key) break;
-            if (indexData.y != hash) continue;
-            uint neighbourIndex = indexData.x;
-
-            // CODE
-            vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
-            vec3 offsetToNeighbour = neighbourPos - pos;
-            float sqrDst = dot(offsetToNeighbour, offsetToNeighbour);
-
-            if (sqrDst > sqrRadius) continue;
-
-            float dst = sqrt(sqrDst);
-
-            if (dst < smoothingRadius)
-            {
-                density += DensityKernel(dst, smoothingRadius);
-                nearDensity += NearDensityKernel(dst, smoothingRadius);
-            }
-            // CODE
+            density += DensityKernel(dst, smoothingRadius);
+            nearDensity += NearDensityKernel(dst, smoothingRadius);
         }
-    }
+    )
 
     return vec2(density, nearDensity);
 }
@@ -167,48 +132,30 @@ vec3 CalculatePressureForce(uint x)
 
     vec3 pressureForce = vec3(0.0);
 
-    // Neighbour search
-    ivec3 originCell = GetCell3D(pos, smoothingRadius);
-    for (int i = 0; i < 27; i++)
-    {
-        uint hash = HashCell3D(originCell + offsets3D[i]);
-        uint key = KeyFromHash(hash, numParticles);
-        uint currIndex = spatialOffsets[key];
+    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, indexData,
+        uint neighbourIndex = indexData.x;
+        if (neighbourIndex == x) continue;
 
-        while (currIndex < numParticles)
-        {
-            uvec3 indexData = uvec3(spatialIndices[currIndex]);
-            currIndex++;
-            if (indexData.z != key) break;
-            if (indexData.y != hash) continue;
-            uint neighbourIndex = indexData.x;
-            // CODE
+        vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
+        vec3 offset = neighbourPos - pos;
+        float sqrDst = dot(offset, offset);
 
-            if (neighbourIndex == x) continue;
+        if (sqrDst > smoothingRadius * smoothingRadius) continue;
 
-            vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
-            vec3 offset = neighbourPos - pos;
-            float sqrDst = dot(offset, offset);
+        float dst = sqrt(sqrDst);
+        vec3 dir = dst > 0.0 ? offset / dst : vec3(0.0, 1.0, 0.0);
 
-            if (sqrDst > smoothingRadius * smoothingRadius) continue;
+        float neighbourDensity = densities[neighbourIndex].x;
+        float neighbourNearDensity = densities[neighbourIndex].y;
+        float neighbourPressure = PressureFromDensity(neighbourDensity);
+        float neighbourNearPressure = NearPressureFromDensity(neighbourNearDensity);
 
-            float dst = sqrt(sqrDst);
-            vec3 dir = dst > 0.0 ? offset / dst : vec3(0.0, 1.0, 0.0);
+        float sharedPressure = (pressure + neighbourPressure) * 0.5;
+        float sharedNearPressure = (nearPressure + neighbourNearPressure) * 0.5;
 
-            float neighbourDensity = densities[neighbourIndex].x;
-            float neighbourNearDensity = densities[neighbourIndex].y;
-            float neighbourPressure = PressureFromDensity(neighbourDensity);
-            float neighbourNearPressure = NearPressureFromDensity(neighbourNearDensity);
-
-            float sharedPressure = (pressure + neighbourPressure) * 0.5;
-            float sharedNearPressure = (nearPressure + neighbourNearPressure) * 0.5;
-
-            pressureForce += dir * DensityDerivative(dst, smoothingRadius) * sharedPressure / neighbourDensity;
-            pressureForce += dir * NearDensityDerivative(dst, smoothingRadius) * sharedNearPressure / neighbourNearDensity;
-
-            // CODE
-        }
-    }
+        pressureForce += dir * DensityDerivative(dst, smoothingRadius) * sharedPressure / neighbourDensity;
+        pressureForce += dir * NearDensityDerivative(dst, smoothingRadius) * sharedNearPressure / neighbourNearDensity;
+    )
 
     return pressureForce / density * deltaTime;
 }
@@ -221,40 +168,22 @@ vec3 CalculateViscosity(uint x)
     vec3 viscosityForce = vec3(0, 0, 0);
     vec3 velocity = vec3(velocities[x]);
 
-    // Neighbour search
-    ivec3 originCell = GetCell3D(pos, smoothingRadius);
-    for (int i = 0; i < 27; i ++)
-    {
-        uint hash = HashCell3D(originCell + offsets3D[i]);
-        uint key = KeyFromHash(hash, numParticles);
-        uint currIndex = spatialOffsets[key];
+    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, indexData,
+        uint neighbourIndex = indexData.x;
+        if (neighbourIndex == x) continue;
 
-        while (currIndex < numParticles)
-        {
-            uvec3 indexData = uvec3(spatialIndices[currIndex]);
-            currIndex++;
-            if (indexData[2] != key) break;
-            if (indexData[1] != hash) continue;
-            uint neighbourIndex = indexData.x;
-            // CODE
+        vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
+        float neighbourDensity = densities[neighbourIndex].x;
 
-            if (neighbourIndex == x) continue;
+        vec3 offsetToNeighbour = neighbourPos - pos;
+        float sqrDstToNeighbour = dot(offsetToNeighbour, offsetToNeighbour);
 
-            vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
-            float neighbourDensity = densities[neighbourIndex].x;
+        if (sqrDstToNeighbour > sqrRadius) continue;
 
-            vec3 offsetToNeighbour = neighbourPos - pos;
-            float sqrDstToNeighbour = dot(offsetToNeighbour, offsetToNeighbour);
-
-            if (sqrDstToNeighbour > sqrRadius) continue;
-
-            float dst = sqrt(sqrDstToNeighbour);
-            vec3 neighbourVelocity = vec3(velocities[neighbourIndex]);
-            viscosityForce += (neighbourVelocity - velocity) * ViscosityKernel(dst, smoothingRadius) / neighbourDensity;
-
-            // CODE
-        }
-    }
+        float dst = sqrt(sqrDstToNeighbour);
+        vec3 neighbourVelocity = vec3(velocities[neighbourIndex]);
+        viscosityForce += (neighbourVelocity - velocity) * ViscosityKernel(dst, smoothingRadius) / neighbourDensity;
+    )
 
     return viscosityForce * viscosityStrength * deltaTime;
 }
@@ -490,7 +419,7 @@ void main() {
         vec3 oldPos = vec3(positions[i]);
         positions[i] += velocities[i] * deltaTime;
         HandleCollisions(i);
-        ResolveTriangleCollisions(i, oldPos);
+//        ResolveTriangleCollisions(i, oldPos);
 
         return;
     }
