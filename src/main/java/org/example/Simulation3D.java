@@ -69,8 +69,7 @@ public class Simulation3D extends SimpleApplication {
 
         setupCameraAndLight();
 
-        // Initialize separated simulation
-        fluidSimulation = new FluidSimulation(20 * 20 * 20, assetManager, bean);
+        fluidSimulation = new FluidSimulation(32*32*32, assetManager, bean);
         rootNode.attachChild(fluidSimulation.getGeometry());
 
         setupBoundaryFrame();
@@ -85,7 +84,7 @@ public class Simulation3D extends SimpleApplication {
         obstacle.setLocalTranslation(0, -5, 0);
         obstacle.rotate(0.0f, 0.5f, 0);
         rootNode.attachChild(obstacle);
-        fluidSimulation.registerCollidable(obstacle);
+//        fluidSimulation.registerCollidable(obstacle);
     }
 
     @Override

@@ -9,9 +9,11 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.VertexBuffer;
 import com.jme3.bounding.BoundingBox;
 import org.lwjgl.BufferUtils;
+
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class FluidSimulation {
@@ -49,8 +51,13 @@ public class FluidSimulation {
         FloatBuffer posBuffer = BufferUtils.createFloatBuffer(numParticles * 4);
         FloatBuffer velBuffer = BufferUtils.createFloatBuffer(numParticles * 4);
         FloatBuffer densBuffer = BufferUtils.createFloatBuffer(numParticles * 2);
-        IntBuffer spatialIndices = BufferUtils.createIntBuffer(numParticles * 4);
+        IntBuffer spatialIndices = BufferUtils.createIntBuffer(numParticles);
+        IntBuffer spatialKeys = BufferUtils.createIntBuffer(numParticles);
         IntBuffer spatialOffsets = BufferUtils.createIntBuffer(numParticles);
+        IntBuffer countBuffer = BufferUtils.createIntBuffer(numParticles);
+        IntBuffer groupSumBuffer = BufferUtils.createIntBuffer(numParticles);
+        IntBuffer sortedItemsBuffer = BufferUtils.createIntBuffer(numParticles);
+        IntBuffer sortedKeysBuffer = BufferUtils.createIntBuffer(numParticles);
 
         // Grid Initialization logic
         int particlesPerRow = (int) Math.round(Math.pow(numParticles, 1.0/3.0));
@@ -65,21 +72,36 @@ public class FluidSimulation {
             posBuffer.put(-boxSize + x * spacing).put(-boxSize + y * spacing).put(-boxSize + z * spacing).put(1.0f);
             velBuffer.put(0).put(0).put(0).put(0);
             densBuffer.put(0).put(0);
-            spatialIndices.put(0).put(0).put(0).put(0);
+            spatialIndices.put(0);
+            spatialKeys.put(0);
             spatialOffsets.put(0);
+            countBuffer.put(0);
+            groupSumBuffer.put(0);
+            sortedItemsBuffer.put(0);
+            sortedKeysBuffer.put(0);
         }
         posBuffer.flip();
         velBuffer.flip();
         densBuffer.flip();
         spatialIndices.flip();
+        spatialKeys.flip();
         spatialOffsets.flip();
+        countBuffer.flip();
+        groupSumBuffer.flip();
+        sortedItemsBuffer.flip();
+        sortedKeysBuffer.flip();
 
         computeShader.setData(0, posBuffer);
         computeShader.setData(1, velBuffer);
         computeShader.setData(2, posBuffer); // Predicted start as current
         computeShader.setData(3, densBuffer);
         computeShader.setData(4, spatialIndices);
-        computeShader.setData(5, spatialOffsets);
+        computeShader.setData(5, spatialKeys);
+        computeShader.setData(6, spatialOffsets);
+        computeShader.setData(7, countBuffer);
+        computeShader.setData(8, groupSumBuffer);
+        computeShader.setData(9, sortedItemsBuffer);
+        computeShader.setData(10, sortedKeysBuffer);
     }
 
     public void update(float tpf) {
@@ -117,22 +139,22 @@ public class FluidSimulation {
         }
 
         transformBuffer.flip();
-        computeShader.setData(8, transformBuffer);
+        computeShader.setData(12, transformBuffer);
     }
 
     private void updateUniforms(float deltaTime) {
         float r = bean.getSmoothingRadius();
-        computeShader.setUniform("SpikyPow3ScalingFactor", (float) (10f / (Math.PI * Math.pow(r, 5))));
-        computeShader.setUniform("SpikyPow2ScalingFactor", (float) (6f / (Math.PI * Math.pow(r, 4))));
-        computeShader.setUniform("SpikyPow3DerivativeScalingFactor", (float) (30f / (Math.pow(r, 5) * Math.PI)));
-        computeShader.setUniform("SpikyPow2DerivativeScalingFactor", (float) (12f / (Math.pow(r, 4) * Math.PI)));
-        computeShader.setUniform("Poly6ScalingFactor", (float) (4 / (Math.PI * Math.pow(r, 8))));
+//        computeShader.setUniform("SpikyPow3ScalingFactor", (float) (10f / (Math.PI * Math.pow(r, 5))));
+//        computeShader.setUniform("SpikyPow2ScalingFactor", (float) (6f / (Math.PI * Math.pow(r, 4))));
+//        computeShader.setUniform("SpikyPow3DerivativeScalingFactor", (float) (30f / (Math.pow(r, 5) * Math.PI)));
+//        computeShader.setUniform("SpikyPow2DerivativeScalingFactor", (float) (12f / (Math.pow(r, 4) * Math.PI)));
+//        computeShader.setUniform("Poly6ScalingFactor", (float) (4 / (Math.PI * Math.pow(r, 8))));
 
-//        computeShader.setUniform("SpikyPow3ScalingFactor", (float) (15f / (Math.PI * Math.pow(bean.getSmoothingRadius(), 6))));
-//        computeShader.setUniform("SpikyPow2ScalingFactor", (float) (15f / (2 * Math.PI * Math.pow(bean.getSmoothingRadius(), 5))));
-//        computeShader.setUniform("SpikyPow3DerivativeScalingFactor", (float) (45f / (Math.pow(bean.getSmoothingRadius(), 6) * Math.PI)));
-//        computeShader.setUniform("SpikyPow2DerivativeScalingFactor", (float) (15f / (Math.pow(bean.getSmoothingRadius(), 5) * Math.PI)));
-//        computeShader.setUniform("Poly6ScalingFactor", (float) (315 / (64 * Math.PI * Math.pow(bean.getSmoothingRadius(), 9))));
+        computeShader.setUniform("SpikyPow3ScalingFactor", (float) (15f / (Math.PI * Math.pow(bean.getSmoothingRadius(), 6))));
+        computeShader.setUniform("SpikyPow2ScalingFactor", (float) (15f / (2 * Math.PI * Math.pow(bean.getSmoothingRadius(), 5))));
+        computeShader.setUniform("SpikyPow3DerivativeScalingFactor", (float) (45f / (Math.pow(bean.getSmoothingRadius(), 6) * Math.PI)));
+        computeShader.setUniform("SpikyPow2DerivativeScalingFactor", (float) (15f / (Math.pow(bean.getSmoothingRadius(), 5) * Math.PI)));
+        computeShader.setUniform("Poly6ScalingFactor", (float) (315 / (64 * Math.PI * Math.pow(bean.getSmoothingRadius(), 9))));
 
         computeShader.setUniform("pressureMultiplier", bean.getPressureMultiplier());
         computeShader.setUniform("viscosityStrength", bean.getViscosityStrength());
@@ -149,29 +171,40 @@ public class FluidSimulation {
 
     private void step() {
         int groups = (numParticles + 63) / 64;
-        int nextPow2 = Integer.highestOneBit(numParticles) << 1;
-        int numStages = Integer.numberOfTrailingZeros(nextPow2);
-
-        // Execute Tasks 1-8
         runTask(1, groups); // Predict
         runTask(2, groups); // Hash
+        runTask(3, groups); // Clear Counts
+        runTask(4, groups); // Count
+        blellochScan(computeShader.getBufferId(7), numParticles); // Scan
+        runTask(7, groups); // Scatter
+        runTask(8, groups); // CopyBack
+        runTask(9, groups); // Offsets
+        runTask(10, groups); // Density
+        runTask(11, groups); // Pressure
+        runTask(12, groups); // Viscosity
+        runTask(13, groups); // Integrate
+    }
 
-        // Sort
-        computeShader.setUniform("task", 3, ComputeShader.IntegerType.UNSIGNED);
-        for (int i = 0; i < numStages; i++) {
-            for (int j = 0; j <= i; j++) {
-                computeShader.setUniform("groupWidth", 1 << (i - j), ComputeShader.IntegerType.UNSIGNED);
-                computeShader.setUniform("groupHeight", (2 << (i - j)) - 1, ComputeShader.IntegerType.UNSIGNED);
-                computeShader.setUniform("stepIndex", j, ComputeShader.IntegerType.UNSIGNED);
-                computeShader.dispatch(groups, 1, 1);
-            }
+    private HashMap<Integer, Integer> buffers = new HashMap<>();
+
+    private void blellochScan(int gpuBufferId, int elementsSize) {
+        int maxElementsPerGroup = 2 * 64;
+        int numGroups = (int) Math.ceil((float) elementsSize / maxElementsPerGroup);
+
+        int groupsSumGpuBufferId = buffers.computeIfAbsent(numGroups, computeShader::createGpuBuffer);
+        computeShader.bindBufferToSlot(7, gpuBufferId);
+        computeShader.bindBufferToSlot(8, groupsSumGpuBufferId);
+        computeShader.setUniform("scanItemCount", elementsSize, ComputeShader.IntegerType.UNSIGNED);
+
+        runTask(5, numGroups);
+        if (numGroups > 1) {
+            blellochScan(groupsSumGpuBufferId, numGroups);
+
+            computeShader.bindBufferToSlot(7, gpuBufferId);
+            computeShader.bindBufferToSlot(8, groupsSumGpuBufferId);
+            computeShader.setUniform("scanItemCount", elementsSize, ComputeShader.IntegerType.UNSIGNED);
+            runTask(6, numGroups);
         }
-
-        runTask(4, groups); // Offsets
-        runTask(5, groups); // Density
-        runTask(6, groups); // Pressure
-        runTask(7, groups); // Viscosity
-        runTask(8, groups); // Integrate
     }
 
     public void registerCollidable(Geometry geom) {
@@ -207,7 +240,7 @@ public class FluidSimulation {
         newBuffer.flip();
         this.triangleBuffer = newBuffer;
         this.numTriangles += triCount;
-        computeShader.setData(7, triangleBuffer);
+        computeShader.setData(11, triangleBuffer);
     }
 
     private void runTask(int taskID, int groups) {

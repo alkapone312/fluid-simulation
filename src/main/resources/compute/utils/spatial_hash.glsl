@@ -30,12 +30,12 @@ uint KeyFromHash(uint hash, uint tableSize)
     return hash % tableSize;
 }
 
-#define DEFINE_SPATIAL_HASH void calculateOffsets(uint i) { \
+#define DEFINE_SPATIAL_HASH void CalculateOffsets(uint i) { \
  \
     if (i >= SPATIAL_HASH_SIZE) return; \
  \
-    uint key = SPATIAL_HASH_INDICES[i].z; \
-    uint keyPrev = (i == 0) ? SPATIAL_HASH_SIZE : SPATIAL_HASH_INDICES[i - 1].z; \
+    uint key = SPATIAL_HASH_INDICES[i]; \
+    uint keyPrev = (i == 0) ? SPATIAL_HASH_INDICES[SPATIAL_HASH_SIZE - 1] : SPATIAL_HASH_INDICES[i - 1]; \
  \
     if (key != keyPrev) { \
         SPATIAL_HASH_OFFSETS[key] = i; \
@@ -52,7 +52,8 @@ void UpdateSpatialHash(uint i) { \
     uint hash = HashCell3D(cell); \
     uint key = KeyFromHash(hash, uint(numParticles)); \
  \
-    SPATIAL_HASH_INDICES[i] = uvec3(index, hash, key); \
+    SPATIAL_HASH_INDICES[i] = key; \
+    SPATIAL_HASH_KEYS[i] = index; \
 } \
 
 
@@ -64,12 +65,11 @@ for (int i = 0; i < 27; i ++) \
     uint key = KeyFromHash(hash, SPATIAL_HASH_SIZE); \
     uint currIndex = SPATIAL_HASH_OFFSETS[key]; \
  \
-    while (currIndex < SPATIAL_HASH_SIZE) \
+    while (currIndex <= SPATIAL_HASH_SIZE) \
     { \
-        uvec3 DEFINE = uvec3(SPATIAL_HASH_INDICES[currIndex]); \
+        uint DEFINE = uint(SPATIAL_HASH_KEYS[currIndex]); \
+        if (SPATIAL_HASH_INDICES[currIndex] != key) break; \
         currIndex++; \
-        if (DEFINE.z != key) break; \
-        if (DEFINE.y != hash) continue; \
  \
         CODE \
     } \

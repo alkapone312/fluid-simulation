@@ -103,6 +103,24 @@ public class ComputeShader {
         ssbos.put(binding, bufferId);
     }
 
+    public int getBufferId(int binding) {
+        return ssbos.get(binding);
+    }
+
+    public int createGpuBuffer(int size) {
+        int bufferId = GL43.glGenBuffers();
+        int sizeInBytes = size * 4;
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, bufferId);
+        GL43.glBufferData(GL43.GL_SHADER_STORAGE_BUFFER, sizeInBytes, GL43.GL_DYNAMIC_DRAW);
+        GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
+
+        return bufferId;
+    }
+
+    public void bindBufferToSlot(int bindingPoint, int bufferId) {
+        GL43.glBindBufferBase(GL43.GL_SHADER_STORAGE_BUFFER, bindingPoint, bufferId);
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Buffer> T getData(int binding, Class<T> bufferType) {
         Integer bufferId = ssbos.get(binding);

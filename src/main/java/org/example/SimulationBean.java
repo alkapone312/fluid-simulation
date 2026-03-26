@@ -14,15 +14,15 @@ public class SimulationBean {
 
     private float nearPressureMultiplier = 20f;
 
-    private float targetDensity = 60f;
+    private float targetDensity = 120f;
 
     private float viscosityStrength = 1f;
 
-    private float boundsX = 5f;
+    private float boundsX = 10f;
 
-    private float boundsY = 5f;
+    private float boundsY = 10f;
 
-    private float boundsZ = 5f;
+    private float boundsZ = 10f;
 
     @Control(type = ControlType.RANGE, min = 0, max = 10.0, step = 1)
     public int getIterationsPerFrame() {

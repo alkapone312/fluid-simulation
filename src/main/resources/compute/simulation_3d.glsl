@@ -21,18 +21,38 @@ layout(std430, binding = 3) buffer DensitiesBuffer {
 };
 
 layout(std430, binding = 4) buffer SpatialIndicesBuffer {
-    uvec3 spatialIndices[];
+    uint spatialIndices[];
 };
 
-layout(std430, binding = 5) buffer SpatialOffsetsBuffer {
+layout(std430, binding = 5) buffer SpatialKeysBuffer {
+    uint spatialKeys[];
+};
+
+layout(std430, binding = 6) buffer SpatialOffsetsBuffer {
     uint spatialOffsets[];
 };
 
-layout(std430, binding = 7) buffer TriangleBuffer {
+layout(std430, binding = 7) buffer CountsBuffer {
+    uint counts[];
+};
+
+layout(std430, binding = 8) buffer GroupSumsBuffer {
+    uint groupSums[];
+};
+
+layout(std430, binding = 9) buffer SortedItems {
+    uint sortedItems[];
+};
+
+layout(std430, binding = 10) buffer SortedKeys {
+    uint sortedKeys[];
+};
+
+layout(std430, binding = 11) buffer TriangleBuffer {
     vec4 triangles[]; // v0, v1, v2 packed as vec4s
 };
 
-layout(std430, binding = 8) buffer TransformBuffer {
+layout(std430, binding = 12) buffer TransformBuffer {
     mat4 transforms[];
 };
 
@@ -65,8 +85,8 @@ void sort(uint i) {
 
     if (indexRight >= numParticles) return;
 
-    if (spatialIndices[indexLeft].z > spatialIndices[indexRight].z) {
-        uvec3 temp = uvec3(spatialIndices[indexLeft]);
+    if (spatialIndices[indexLeft] > spatialIndices[indexRight]) {
+        uint temp = spatialIndices[indexLeft];
         spatialIndices[indexLeft] = spatialIndices[indexRight];
         spatialIndices[indexRight] = temp;
     }
@@ -74,6 +94,7 @@ void sort(uint i) {
 
 #define SPATIAL_HASH_OFFSETS spatialOffsets
 #define SPATIAL_HASH_INDICES spatialIndices
+#define SPATIAL_HASH_KEYS spatialKeys
 #define SPATIAL_HASH_POSITIONS predictedPositions
 #define SPATIAL_HASH_CELL_SIZE smoothingRadius
 #define SPATIAL_HASH_SIZE numParticles
@@ -86,13 +107,11 @@ DEFINE_SPATIAL_HASH
 vec2 CalculateDensity(uint x)
 {
     vec3 pos = vec3(predictedPositions[x]);
-    float density = 0.0;
-    float nearDensity = 0.0;
+    float density = 0.1;
+    float nearDensity = 0.1;
     float sqrRadius = smoothingRadius * smoothingRadius;
 
-    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, indexData,
-        uint neighbourIndex = indexData.x;
-
+    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, neighbourIndex,
         vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
         vec3 offsetToNeighbour = neighbourPos - pos;
         float sqrDst = dot(offsetToNeighbour, offsetToNeighbour);
@@ -101,11 +120,8 @@ vec2 CalculateDensity(uint x)
 
         float dst = sqrt(sqrDst);
 
-        if (dst < smoothingRadius)
-        {
-            density += DensityKernel(dst, smoothingRadius);
-            nearDensity += NearDensityKernel(dst, smoothingRadius);
-        }
+        density += DensityKernel(dst, smoothingRadius);
+        nearDensity += NearDensityKernel(dst, smoothingRadius);
     )
 
     return vec2(density, nearDensity);
@@ -132,8 +148,7 @@ vec3 CalculatePressureForce(uint x)
 
     vec3 pressureForce = vec3(0.0);
 
-    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, indexData,
-        uint neighbourIndex = indexData.x;
+    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, neighbourIndex,
         if (neighbourIndex == x) continue;
 
         vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
@@ -168,8 +183,7 @@ vec3 CalculateViscosity(uint x)
     vec3 viscosityForce = vec3(0, 0, 0);
     vec3 velocity = vec3(velocities[x]);
 
-    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, indexData,
-        uint neighbourIndex = indexData.x;
+    SPATIAL_HASH_NEIGHBOUR_LOOP(pos, smoothingRadius, neighbourIndex,
         if (neighbourIndex == x) continue;
 
         vec3 neighbourPos = vec3(predictedPositions[neighbourIndex]);
@@ -194,6 +208,8 @@ vec3 CalculateViscosity(uint x)
 
 void HandleCollisions(uint particleIndex)
 {
+    if (particleIndex >= numParticles) return;
+
     vec3 pos = vec3(positions[particleIndex]);
     vec3 vel = vec3(velocities[particleIndex]);
 
@@ -368,11 +384,125 @@ void ResolveTriangleCollisions(uint particleIndex, vec3 oldPos) {
     velocities[particleIndex] = vel;
 }
 
+void ClearCounts(uint id) {
+    if (id >= numParticles) return;
+
+    counts[id] = 0;
+    spatialKeys[id] = id;
+    spatialOffsets[id] = numParticles; // Mark as empty/invalid
+}
+
+void CalculateCounts(uint id) {
+    if (id >= numParticles) return;
+
+    uint key = spatialIndices[id];
+    atomicAdd(counts[key], 1);
+}
+
+uniform uint scanItemCount;
+const uint GROUP_SIZE = 64;
+const uint ITEMS_PER_GROUP = 2 * GROUP_SIZE;
+
+shared uint Temp[ITEMS_PER_GROUP];
+
+void Scan()
+{
+    uint threadGlobal = gl_GlobalInvocationID.x;
+    uint threadLocal = gl_LocalInvocationID.x;
+    uint group = gl_WorkGroupID.x;
+
+    uint localA = threadLocal * 2 + 0;
+    uint localB = threadLocal * 2 + 1;
+    uint globalA = threadGlobal * 2 + 0;
+    uint globalB = threadGlobal * 2 + 1;
+
+    bool hasA = bool(globalA < scanItemCount);
+    bool hasB = bool(globalB < scanItemCount);
+
+    Temp[localA] = hasA ? counts[globalA] : 0;
+    Temp[localB] = hasB ? counts[globalB] : 0;
+
+    uint offset = 1;
+    uint numActiveThreads;
+
+    for (numActiveThreads = GROUP_SIZE; numActiveThreads > 0; numActiveThreads /= 2)
+    {
+        barrier();
+
+        if (threadLocal < numActiveThreads)
+        {
+            uint indexA = offset * (localA + 1) - 1;
+            uint indexB = offset * (localB + 1) - 1;
+            Temp[indexB] = Temp[indexA] + Temp[indexB];
+        }
+
+        offset *= 2;
+    }
+
+    if (threadLocal == 0)
+    {
+        groupSums[group] = Temp[ITEMS_PER_GROUP - 1];
+        Temp[ITEMS_PER_GROUP - 1] = 0;
+    }
+
+    for (numActiveThreads = 1; numActiveThreads <= GROUP_SIZE; numActiveThreads *= 2)
+    {
+        barrier();
+        offset /= 2;
+
+        if (threadLocal < numActiveThreads)
+        {
+            uint indexA = offset * (localA + 1) - 1;
+            uint indexB = offset * (localB + 1) - 1;
+
+            uint sum = Temp[indexA] + Temp[indexB];
+            Temp[indexA] = Temp[indexB];
+            Temp[indexB] = sum;
+        }
+    }
+
+    barrier();
+
+    if (hasA) counts[globalA] = Temp[localA];
+    if (hasB) counts[globalB] = Temp[localB];
+}
+
+void ScanCombine()
+{
+    uint threadGlobal = gl_GlobalInvocationID.x;
+    uint group = gl_WorkGroupID.x;
+
+    uint globalA = threadGlobal * 2 + 0;
+    uint globalB = threadGlobal * 2 + 1;
+
+    if (globalA < scanItemCount) counts[globalA] += groupSums[group];
+    if (globalB < scanItemCount) counts[globalB] += groupSums[group];
+}
+
+void Scatter(uint id) {
+    if (id >= numParticles) return;
+
+    uint key = spatialIndices[id];
+
+    // atomicAdd returns the ORIGINAL value before the addition
+    uint sortedIndex = atomicAdd(counts[key], 1u);
+
+    sortedItems[sortedIndex] = spatialKeys[id];
+    sortedKeys[sortedIndex] = key;
+}
+
+void CopyBack(uint id) {
+    if (id >= numParticles) return;
+
+    spatialKeys[id] = sortedItems[id];
+    spatialIndices[id] = sortedKeys[id];
+}
+
 void main() {
     uint i = gl_GlobalInvocationID.x;
-    if (i >= numParticles) return;
 
     if (task == 1) {
+        if (i >= numParticles) return;
         velocities[i] += gravity * deltaTime;
         predictedPositions[i] = positions[i] + velocities[i] * deltaTime;
 
@@ -380,46 +510,86 @@ void main() {
     }
 
     if (task == 2) {
+        if (i >= numParticles) return;
         UpdateSpatialHash(i);
 
         return;
     }
 
     if (task == 3) {
-        sort(i);
+        if (i >= numParticles) return;
+        ClearCounts(i);
 
         return;
     }
 
     if (task == 4) {
-        calculateOffsets(i);
+        if (i >= numParticles) return;
+        CalculateCounts(i);
 
         return;
     }
 
     if (task == 5) {
-        densities[i] = CalculateDensity(i);
+        Scan();
 
         return;
     }
 
     if (task == 6) {
-        velocities[i] += CalculatePressureForce(i);
+        ScanCombine();
 
         return;
     }
 
     if (task == 7) {
-        velocities[i] += CalculateViscosity(i);
+        if (i >= numParticles) return;
+        Scatter(i);
 
         return;
     }
 
     if (task == 8) {
+        if (i >= numParticles) return;
+        CopyBack(i);
+
+        return;
+    }
+
+    if (task == 9) {
+        if (i >= numParticles) return;
+        CalculateOffsets(i);
+
+        return;
+    }
+
+    if (task == 10) {
+        if (i >= numParticles) return;
+        densities[i] = CalculateDensity(i);
+
+        return;
+    }
+
+    if (task == 11) {
+        if (i >= numParticles) return;
+        velocities[i] += CalculatePressureForce(i);
+
+        return;
+    }
+
+    if (task == 12) {
+        if (i >= numParticles) return;
+        velocities[i] += CalculateViscosity(i);
+
+        return;
+    }
+
+    if (task == 13) {
+        if (i >= numParticles) return;
         vec3 oldPos = vec3(positions[i]);
         positions[i] += velocities[i] * deltaTime;
         HandleCollisions(i);
-//        ResolveTriangleCollisions(i, oldPos);
+        ResolveTriangleCollisions(i, oldPos);
 
         return;
     }
