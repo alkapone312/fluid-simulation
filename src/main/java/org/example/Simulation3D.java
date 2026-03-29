@@ -73,27 +73,10 @@ public class Simulation3D extends SimpleApplication {
         rootNode.attachChild(fluidSimulation.getGeometry());
 
         setupBoundaryFrame();
-
-        com.jme3.scene.shape.Torus torusMesh = new com.jme3.scene.shape.Torus(32, 32, 0.5f, 2.0f);
-        Geometry obstacle = new Geometry("TorusObstacle", torusMesh);
-
-        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat.setBoolean("UseMaterialColors", true);
-        mat.setColor("Diffuse", ColorRGBA.Red);
-        obstacle.setMaterial(mat);
-        obstacle.setLocalTranslation(0, -5, 0);
-        obstacle.rotate(0.0f, 0.5f, 0);
-        rootNode.attachChild(obstacle);
-//        fluidSimulation.registerCollidable(obstacle);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
-        Spatial obstacle = rootNode.getChild("TorusObstacle");
-        if (obstacle != null) {
-            obstacle.rotate(tpf * 0.4f, tpf * 0.2f, 0);
-        }
-
         fluidSimulation.update(tpf);
         updateBoundaryFrame();
     }

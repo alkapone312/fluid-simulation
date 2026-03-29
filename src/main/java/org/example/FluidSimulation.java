@@ -23,6 +23,7 @@ public class FluidSimulation {
     private final Geometry geometry;
     private final SimulationBean bean;
 
+    private final List<com.jme3.math.Matrix4f> prevTransforms = new ArrayList<>();
     private final List<Geometry> collidables = new ArrayList<>();
     private FloatBuffer transformBuffer;
     private FloatBuffer triangleBuffer;
@@ -125,7 +126,8 @@ public class FluidSimulation {
     private void updateTransforms() {
         if (collidables.isEmpty()) return;
 
-        int requiredFloats = collidables.size() * 16;
+        // We now need 4 matrices per object (Current, Previous, Current Inverse, Previous Inverse)
+        int requiredFloats = collidables.size() * 16 * 4;
         if (transformBuffer == null || transformBuffer.capacity() < requiredFloats) {
             transformBuffer = BufferUtils.createFloatBuffer(requiredFloats);
         }
@@ -133,9 +135,27 @@ public class FluidSimulation {
         transformBuffer.clear();
         float[] matrixArray = new float[16];
 
-        for (Geometry geom : collidables) {
-            geom.getWorldMatrix().fillFloatArray(matrixArray, true);
+        for (int i = 0; i < collidables.size(); i++) {
+            Geometry geom = collidables.get(i);
+            com.jme3.math.Matrix4f currentMat = geom.getWorldMatrix();
+            com.jme3.math.Matrix4f prevMat = prevTransforms.get(i);
+
+            com.jme3.math.Matrix4f currentInv = currentMat.invert();
+            com.jme3.math.Matrix4f prevInv = prevMat.invert();
+
+            currentMat.fillFloatArray(matrixArray, true);
             transformBuffer.put(matrixArray);
+
+            prevMat.fillFloatArray(matrixArray, true);
+            transformBuffer.put(matrixArray);
+
+            currentInv.fillFloatArray(matrixArray, true);
+            transformBuffer.put(matrixArray);
+
+            prevInv.fillFloatArray(matrixArray, true);
+            transformBuffer.put(matrixArray);
+
+            prevTransforms.set(i, currentMat.clone());
         }
 
         transformBuffer.flip();
@@ -210,7 +230,7 @@ public class FluidSimulation {
     public void registerCollidable(Geometry geom) {
         int objectId = collidables.size();
         collidables.add(geom);
-
+        prevTransforms.add(geom.getWorldMatrix().clone());
         Mesh mesh = geom.getMesh();
         int triCount = mesh.getTriangleCount();
         FloatBuffer newBuffer = BufferUtils.createFloatBuffer((numTriangles + triCount) * 3 * 4);
@@ -224,12 +244,10 @@ public class FluidSimulation {
             com.jme3.math.Triangle tri = new com.jme3.math.Triangle();
             mesh.getTriangle(i, tri);
 
-            // IMPORTANT: Get LOCAL vertices, do not transform them on the CPU anymore!
             Vector3f v1 = tri.get1();
             Vector3f v2 = tri.get2();
             Vector3f v3 = tri.get3();
 
-            // Pack the objectId into the 'w' component using float conversion
             float floatObjId = Float.intBitsToFloat(objectId);
 
             newBuffer.put(v1.x).put(v1.y).put(v1.z).put(floatObjId);

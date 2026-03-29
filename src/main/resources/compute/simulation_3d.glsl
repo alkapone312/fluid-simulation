@@ -52,8 +52,15 @@ layout(std430, binding = 11) buffer TriangleBuffer {
     vec4 triangles[]; // v0, v1, v2 packed as vec4s
 };
 
+struct ObjectTransform {
+    mat4 currentTransform;
+    mat4 prevTransform;
+    mat4 currentInverse;
+    mat4 prevInverse;
+};
+
 layout(std430, binding = 12) buffer TransformBuffer {
-    mat4 transforms[];
+    ObjectTransform transforms[];
 };
 
 uniform float deltaTime;
@@ -297,7 +304,7 @@ void ResolveTriangleCollisions(uint particleIndex, vec3 oldPos) {
         // Read the object ID from the 'w' component of the first vertex
         float rawId = triangles[i * 3].w;
         uint objId = floatBitsToUint(rawId);
-        mat4 modelMatrix = transforms[objId];
+        mat4 modelMatrix = transforms[objId].currentTransform;
 
         // Transform local-space vertices to world-space on the GPU
         vec3 v0 = (modelMatrix * vec4(triangles[i*3].xyz, 1.0)).xyz;
