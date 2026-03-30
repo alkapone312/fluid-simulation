@@ -9,11 +9,11 @@ public final class BeanEditor {
 
     private BeanEditor() {}
 
-    public static Panel open(Object bean) {
-        return new BeanEditorLemur<>(bean, (b) -> {}).build();
+    public static Panel open(Object bean, String name) {
+        return new BeanEditorLemur<>(bean, (b) -> {}).build(name);
     }
 
-    public static <T> Panel openWithCallback(T bean, Consumer<T> consumer) {
-        return new BeanEditorLemur<>(bean, consumer).build();
+    public static <T> Panel openWithCallback(T bean, Consumer<T> consumer, String name) {
+        return new BeanEditorLemur<>(bean, consumer).build(name);
     }
 }

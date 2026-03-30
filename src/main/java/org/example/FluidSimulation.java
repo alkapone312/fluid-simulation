@@ -43,9 +43,6 @@ public class FluidSimulation {
         mesh.setStatic();
 
         this.geometry = new Geometry("FluidParticles", mesh);
-        Material mat = new Material(assetManager, "materials/particles/Particles.j3md");
-        this.geometry.setMaterial(mat);
-        this.geometry.setCullHint(Spatial.CullHint.Never);
     }
 
     private void initBuffers() {

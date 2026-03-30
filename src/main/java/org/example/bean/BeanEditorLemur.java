@@ -1,6 +1,8 @@
 package org.example.bean;
 
+import com.jme3.math.ColorRGBA;
 import com.simsilica.lemur.*;
+import com.simsilica.lemur.component.QuadBackgroundComponent;
 import com.simsilica.lemur.component.SpringGridLayout;
 import com.simsilica.lemur.core.VersionedReference;
 import com.simsilica.lemur.text.DocumentModel;
@@ -35,10 +37,15 @@ public class BeanEditorLemur<T> {
         }, 0, 200, TimeUnit.MILLISECONDS);
     }
 
-    public Panel build() {
+    public Panel build(String name) {
         Container root = new Container(new SpringGridLayout(Axis.Y, Axis.X));
         addBeanProperties(root, rootBean);
-        return root;
+        var rollup = new RollupPanel(name, "glass");
+        rollup.setContents(root);
+        rollup.setOpen(false);
+        rollup.setBackground(new QuadBackgroundComponent(new ColorRGBA(0, 0, 0, 0.5f)));
+
+        return rollup;
     }
 
     private void addBeanProperties(Container parent, Object bean) {

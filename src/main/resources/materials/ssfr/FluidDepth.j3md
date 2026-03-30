@@ -1,0 +1,15 @@
+MaterialDef Fluid Depth {
+    MaterialParameters {
+        BufferObject PositionsBuffer
+        Float particleRadius : 0.3
+        Float viewportHeight
+    }
+    Technique Default {
+        VertexShader GLSL430: materials/ssfr/surface_depth.vert
+        FragmentShader GLSL430: materials/ssfr/surface_depth.frag
+        WorldParameters {
+            WorldViewMatrix
+            ProjectionMatrix
+        }
+    }
+}

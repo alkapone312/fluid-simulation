@@ -1,0 +1,136 @@
+package org.example.render.ssfr;
+
+import com.jme3.asset.AssetManager;
+import com.jme3.material.Material;
+import com.jme3.material.RenderState;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
+import com.jme3.post.SceneProcessor;
+import com.jme3.profile.AppProfiler;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.shape.Quad;
+import com.jme3.texture.FrameBuffer;
+import com.jme3.texture.Image;
+import com.jme3.texture.Texture2D;
+
+public class SsfrProcessor implements SceneProcessor {
+    private RenderManager rm;
+    private ViewPort vp;
+
+    private Geometry particleGeometry;
+
+    private FrameBuffer depthFbo;
+    private Texture2D depthTex;
+
+    private FrameBuffer thicknessFbo;
+    private Texture2D thicknessTex;
+
+    private Material depthMat;
+    private Material thicknessMat;
+    private Material shadeMat;
+
+    private Geometry fsQuad;
+
+    private SsfrBean ssfrBean;
+    private SsfrSmoothing ssfrSmoothing;
+
+    private int w;
+    private int h;
+
+    public SsfrProcessor(
+        AssetManager assetManager,
+        Geometry particleGeometry,
+        SsfrBean ssfrBean,
+        SsfrSmoothing smoothing
+    ) {
+        this.particleGeometry = particleGeometry;
+        this.depthMat = new Material(assetManager, "materials/ssfr/FluidDepth.j3md");
+        this.shadeMat =  new Material(assetManager, "materials/ssfr/FluidShade.j3md");
+        this.thicknessMat = new Material(assetManager, "materials/ssfr/FluidThickness.j3md");
+        this.ssfrBean = ssfrBean;
+        this.ssfrSmoothing = smoothing;
+    }
+
+    @Override
+    public void initialize(RenderManager rm, ViewPort vp) {
+        this.rm = rm;
+        this.vp = vp;
+        w = vp.getCamera().getWidth();
+        h = vp.getCamera().getHeight();
+
+        depthTex = new Texture2D(w, h, Image.Format.R32F);
+        depthFbo = new FrameBuffer(w, h, 1);
+        depthFbo.setDepthBuffer(Image.Format.Depth);
+        depthFbo.setColorTexture(depthTex);
+
+        thicknessTex = new Texture2D(w, h, Image.Format.R32F);
+        thicknessFbo = new FrameBuffer(w, h, 1);
+        thicknessFbo.setColorTexture(thicknessTex);
+
+        Quad q = new Quad(w, h);
+        fsQuad = new Geometry("FullscreenQuad", q);
+        fsQuad.setLocalTranslation(0, 0, -1);
+    }
+
+    @Override
+    public void postQueue(RenderQueue rq) {
+    }
+
+    @Override
+    public void reshape(ViewPort viewPort, int i, int i1) {}
+
+    @Override
+    public boolean isInitialized() {
+        return rm != null;
+    }
+
+    @Override
+    public void preFrame(float v) {}
+
+    @Override
+    public void postFrame(FrameBuffer frameBuffer) {
+        // 1. Render Depth
+        depthMat.setFloat("viewportHeight", h);
+        depthMat.setFloat("particleRadius", ssfrBean.getParticleRadius());
+        rm.getRenderer().setFrameBuffer(depthFbo);
+        rm.getRenderer().clearBuffers(true, true, true);
+        rm.setForcedMaterial(depthMat);
+        rm.renderGeometry(particleGeometry);
+        rm.setForcedMaterial(null);
+
+        // 2. Render thickness
+        thicknessMat.setFloat("viewportHeight", h);
+        thicknessMat.setFloat("particleRadius", ssfrBean.getParticleRadius());
+        thicknessMat.setFloat("thicknessMultiplier", ssfrBean.getThicknessMultiplier());
+        rm.getRenderer().setFrameBuffer(thicknessFbo);
+        rm.getRenderer().clearBuffers(true, true, true);
+        rm.setForcedMaterial(thicknessMat);
+        rm.renderGeometry(particleGeometry);
+        rm.setForcedMaterial(null);
+
+        // 3. Smooth
+        ssfrSmoothing.setDepthTexture(depthTex);
+        ssfrSmoothing.smooth(rm, fsQuad);
+
+        // 4. Final Shade
+        rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
+        shadeMat.setTexture("SmoothedDepthTex", ssfrSmoothing.getOutputTexture());
+        shadeMat.setTexture("ThicknessTex", thicknessTex);
+        shadeMat.setVector2("TexelSize", new Vector2f(1f/w, 1f/h));
+        shadeMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, 0.5f).normalizeLocal());
+        shadeMat.setMatrix4("ProjectionMatrixInverse", vp.getCamera().getProjectionMatrix().invert());
+
+        fsQuad.setMaterial(shadeMat);
+        rm.renderGeometry(fsQuad);
+    }
+
+    @Override
+    public void cleanup() {}
+
+    @Override
+    public void setProfiler(AppProfiler appProfiler) {}
+}

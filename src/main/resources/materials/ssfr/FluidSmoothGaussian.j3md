@@ -1,0 +1,13 @@
+MaterialDef Fluid Smooth Gaussian {
+    MaterialParameters {
+        Texture2D DepthTex
+        Boolean horizontal
+        Int blurSize
+        Float smoothness
+        Float depthDiffStrength
+    }
+    Technique Default {
+        VertexShader GLSL430: materials/PostPass.vert
+        FragmentShader GLSL430: materials/ssfr/surface_smooth_gaussian.frag
+    }
+}

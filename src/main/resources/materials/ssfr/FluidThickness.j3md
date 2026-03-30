@@ -1,0 +1,21 @@
+MaterialDef Fluid Depth {
+    MaterialParameters {
+        BufferObject PositionsBuffer
+        Float particleRadius : 0.3
+        Float viewportHeight
+        Float thicknessMultiplier
+    }
+    Technique Default {
+        VertexShader GLSL430: materials/ssfr/surface_depth.vert
+        FragmentShader GLSL430: materials/ssfr/surface_thickness.frag
+        WorldParameters {
+            WorldViewMatrix
+            ProjectionMatrix
+        }
+        RenderState {
+            Blend Additive        // Add thickness values of computed particles
+            DepthTest Off         // Only render fluid in front of solid objects
+            DepthWrite Off        // Don't occlude other particles
+        }
+    }
+}

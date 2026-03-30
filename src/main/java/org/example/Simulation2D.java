@@ -71,7 +71,7 @@ public class Simulation2D extends SimpleApplication {
     public void simpleInitApp() {
         GuiGlobals.initialize(this);
         GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
-        Panel panel = BeanEditor.open(bean);
+        Panel panel = BeanEditor.open(bean, bean.getClass().getSimpleName());
         panel.setLocalTranslation(cam.getLocation().x, cam.getLocation().y, cam.getLocation().z);
         panel.setLocalScale(0.005f);
         rootNode.attachChild(panel);

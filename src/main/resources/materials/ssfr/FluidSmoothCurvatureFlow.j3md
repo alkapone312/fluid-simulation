@@ -1,0 +1,13 @@
+MaterialDef Fluid Smooth Curvature Flow {
+    MaterialParameters {
+        Texture2D DepthTex
+        Vector2 TexelSize
+        Float Dt : 0.0001
+        Float Cx
+        Float Cy
+    }
+    Technique Default {
+        VertexShader GLSL430: materials/PostPass.vert
+        FragmentShader GLSL430: materials/ssfr/surface_smooth_curvature_flow.frag
+    }
+}
