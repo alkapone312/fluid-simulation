@@ -2,15 +2,18 @@ MaterialDef Fluid Shade {
     MaterialParameters {
         Texture2D SmoothedDepthTex
         Texture2D ThicknessTex
+        Texture2D SceneTex
+        Texture2D SceneDepthTex
         Vector2 TexelSize
         Matrix4 ProjectionMatrixInverse
         Vector3 LightDir
+        Boolean DebugDepth
+        Boolean DebugThickness
     }
     Technique Default {
         VertexShader GLSL430: materials/PostPass.vert
         FragmentShader GLSL430: materials/ssfr/surface_shade.frag
         RenderState {
-            Blend Alpha
             DepthTest Off
             DepthWrite Off
         }

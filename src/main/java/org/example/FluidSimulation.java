@@ -106,7 +106,7 @@ public class FluidSimulation {
         float deltaTime = Math.min(tpf / bean.getIterationsPerFrame(), 1.0f/60.0f);
         computeShader.bind();
 
-        updateTransforms(); // <-- New method call
+        updateTransforms();
         updateUniforms(deltaTime);
 
         for (int i = 0; i < bean.getIterationsPerFrame(); i++) {
@@ -123,7 +123,6 @@ public class FluidSimulation {
     private void updateTransforms() {
         if (collidables.isEmpty()) return;
 
-        // We now need 4 matrices per object (Current, Previous, Current Inverse, Previous Inverse)
         int requiredFloats = collidables.size() * 16 * 4;
         if (transformBuffer == null || transformBuffer.capacity() < requiredFloats) {
             transformBuffer = BufferUtils.createFloatBuffer(requiredFloats);

@@ -9,6 +9,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.WireBox;
 import com.jme3.system.AppSettings;
+import com.jme3.util.SkyFactory;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
 import org.example.bean.BeanEditor;
@@ -72,6 +73,11 @@ public class Simulation3D extends SimpleApplication {
         com.jme3.light.AmbientLight al = new com.jme3.light.AmbientLight();
         al.setColor(ColorRGBA.White.mult(0.3f));
         rootNode.addLight(al);
+
+        Spatial sky = SkyFactory.createSky(assetManager,
+            "textures/PanoramaSky.png",
+            SkyFactory.EnvMapType.EquirectMap);
+        rootNode.attachChild(sky);
 
         float floorSize = 100f;
         com.jme3.scene.shape.Quad quad = new com.jme3.scene.shape.Quad(floorSize, floorSize);

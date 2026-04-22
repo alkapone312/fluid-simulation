@@ -9,5 +9,9 @@ MaterialDef Fluid Smooth Gaussian {
     Technique Default {
         VertexShader GLSL430: materials/PostPass.vert
         FragmentShader GLSL430: materials/ssfr/surface_smooth_gaussian.frag
+        RenderState {
+            DepthTest Off
+            DepthWrite Off
+        }
     }
 }

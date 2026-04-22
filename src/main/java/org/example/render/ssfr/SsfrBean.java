@@ -4,9 +4,15 @@ import org.example.bean.Control;
 import org.example.bean.ControlType;
 
 public class SsfrBean {
-    private float particleRadius = 0.25f;
+    private float particleRadius = 0.18f;
 
     private float thicknessMultiplier = 0.1f;
+
+    private int applySmoothing = 1;
+
+    private int debugDepth = 0;
+
+    private int debugThickness = 0;
 
     @Control(type = ControlType.RANGE, min = 0, max = 1.0, step = 0.01)
     public float getParticleRadius() {
@@ -24,5 +30,32 @@ public class SsfrBean {
 
     public void setThicknessMultiplier(float thicknessMultiplier) {
         this.thicknessMultiplier = thicknessMultiplier;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0, max = 1, step = 1)
+    public int getApplySmoothing() {
+        return applySmoothing;
+    }
+
+    public void setApplySmoothing(int applySmoothing) {
+        this.applySmoothing = applySmoothing;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0, max = 1, step = 1)
+    public int getDebugDepth() {
+        return debugDepth;
+    }
+
+    public void setDebugDepth(int debugDepth) {
+        this.debugDepth = debugDepth;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0, max = 1, step = 1)
+    public int getDebugThickness() {
+        return debugThickness;
+    }
+
+    public void setDebugThickness(int debugThickness) {
+        this.debugThickness = debugThickness;
     }
 }

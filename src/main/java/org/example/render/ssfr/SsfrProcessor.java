@@ -2,8 +2,6 @@ package org.example.render.ssfr;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
@@ -28,6 +26,10 @@ public class SsfrProcessor implements SceneProcessor {
 
     private FrameBuffer thicknessFbo;
     private Texture2D thicknessTex;
+
+    private FrameBuffer sceneFbo;
+    private Texture2D sceneTex;
+    private Texture2D sceneDepthTex;
 
     private Material depthMat;
     private Material thicknessMat;
@@ -71,6 +73,13 @@ public class SsfrProcessor implements SceneProcessor {
         thicknessFbo = new FrameBuffer(w, h, 1);
         thicknessFbo.setColorTexture(thicknessTex);
 
+        sceneTex = new Texture2D(w, h, Image.Format.RGBA32F);
+        sceneDepthTex = new Texture2D(w, h, Image.Format.Depth);
+        sceneFbo = new FrameBuffer(w, h, 1);
+        sceneFbo.setDepthBuffer(Image.Format.Depth);
+        sceneFbo.setDepthTexture(sceneDepthTex);
+        sceneFbo.setColorTexture(sceneTex);
+
         Quad q = new Quad(w, h);
         fsQuad = new Geometry("FullscreenQuad", q);
         fsQuad.setLocalTranslation(0, 0, -1);
@@ -93,6 +102,9 @@ public class SsfrProcessor implements SceneProcessor {
 
     @Override
     public void postFrame(FrameBuffer frameBuffer) {
+        // Copy rendered scene and scene depth
+        rm.getRenderer().copyFrameBuffer(frameBuffer, sceneFbo, true, true);
+
         // 1. Render Depth
         depthMat.setFloat("viewportHeight", h);
         depthMat.setFloat("particleRadius", ssfrBean.getParticleRadius());
@@ -118,7 +130,11 @@ public class SsfrProcessor implements SceneProcessor {
 
         // 4. Final Shade
         rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
-        shadeMat.setTexture("SmoothedDepthTex", ssfrSmoothing.getOutputTexture());
+        shadeMat.setBoolean("DebugDepth", ssfrBean.getDebugDepth() == 1);
+        shadeMat.setBoolean("DebugThickness", ssfrBean.getDebugThickness() == 1);
+        shadeMat.setTexture("SceneTex", sceneTex);
+        shadeMat.setTexture("SceneDepthTex", sceneDepthTex);
+        shadeMat.setTexture("SmoothedDepthTex", ssfrBean.getApplySmoothing() == 1 ? ssfrSmoothing.getOutputTexture() : depthTex);
         shadeMat.setTexture("ThicknessTex", thicknessTex);
         shadeMat.setVector2("TexelSize", new Vector2f(1f/w, 1f/h));
         shadeMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, 0.5f).normalizeLocal());
