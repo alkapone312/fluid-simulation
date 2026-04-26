@@ -19,7 +19,7 @@ vec3 reconstructPos(vec2 uv, float z) {
 }
 
 float getLinearSceneDepth(float rawDepth) {
-    // Konwersja z [0, 1] do NDC (Normalized Device Coordinates) [-1, 1]
+    // Konwersja z [0, 1] do [-1, 1]
     float ndcZ = rawDepth * 2.0 - 1.0;
 
     // Mnożenie przez odwrotność macierzy projekcji, aby wrócić do View Space
@@ -35,7 +35,7 @@ void main() {
 
     // DEBUG
     if (m_DebugDepth) {
-        fragColor = vec4(vec3(-z / 10), 1.0);
+        fragColor = vec4(vec3(-z / 40), 1.0);
         return;
     }
 

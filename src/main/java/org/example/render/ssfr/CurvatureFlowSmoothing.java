@@ -23,26 +23,36 @@ public class CurvatureFlowSmoothing implements SsfrSmoothing {
     private int width;
     private int height;
 
-    public CurvatureFlowSmoothing(AssetManager assetManager) {
+    private CurvatureFlowSmoothingBean bean;
+
+    public CurvatureFlowSmoothing(
+        AssetManager assetManager,
+        CurvatureFlowSmoothingBean bean
+    ) {
+        this.bean = bean;
         this.smoothMat = new Material(assetManager, "materials/ssfr/FluidSmoothCurvatureFlow.j3md");
     }
 
     @Override
     public void smooth(RenderManager rm, Geometry fsQuad) {
-        final float fov = 45f;
+        final float fov = rm.getCurrentCamera().getFov();
         float aspect = (float)width / height;
-        float invFocalLenX = (float)Math.tan(Math.toRadians(fov) * 0.5) * aspect;
+
         float invFocalLenY = (float)Math.tan(Math.toRadians(fov) * 0.5);
-        float cx = 2.0f / (width * invFocalLenX);
-        float cy = 2.0f / (height * invFocalLenY);
+        float invFocalLenX = invFocalLenY * aspect;
+
+        float cx = (2.0f * invFocalLenX) / width;
+        float cy = (2.0f * invFocalLenY) / height;
 
         smoothMat.setVector2("TexelSize", new Vector2f(1f/width, 1f/height));
         smoothMat.setFloat("Cx", cx);
         smoothMat.setFloat("Cy", cy);
 
+        smoothMat.setFloat("Dt", bean.getStep());
+
         this.currentTexture = depthTexture;
         fsQuad.setMaterial(smoothMat);
-        for (int i = 0; i < 0; i++) {
+        for (int i = 0; i < bean.getNumberOfIterations(); i++) {
             FrameBuffer target = (i % 2 == 0) ? smoothFboA : smoothFboB;
             rm.getRenderer().setFrameBuffer(target);
             smoothMat.setTexture("DepthTex", currentTexture);

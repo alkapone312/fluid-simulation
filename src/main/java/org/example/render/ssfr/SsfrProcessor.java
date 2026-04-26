@@ -57,6 +57,10 @@ public class SsfrProcessor implements SceneProcessor {
         this.ssfrSmoothing = smoothing;
     }
 
+    public void setSsfrSmoothing(SsfrSmoothing ssfrSmoothing) {
+        this.ssfrSmoothing = ssfrSmoothing;
+    }
+
     @Override
     public void initialize(RenderManager rm, ViewPort vp) {
         this.rm = rm;

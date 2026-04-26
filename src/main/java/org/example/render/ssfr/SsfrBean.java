@@ -14,6 +14,10 @@ public class SsfrBean {
 
     private int debugThickness = 0;
 
+    private int gaussianSmoothing = 1;
+
+    private int curvatureFlowSmoothing = 0;
+
     @Control(type = ControlType.RANGE, min = 0, max = 1.0, step = 0.01)
     public float getParticleRadius() {
         return particleRadius;
@@ -57,5 +61,23 @@ public class SsfrBean {
 
     public void setDebugThickness(int debugThickness) {
         this.debugThickness = debugThickness;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0, max = 1, step = 1)
+    public int getGaussianSmoothing() {
+        return gaussianSmoothing;
+    }
+
+    public void setGaussianSmoothing(int gaussianSmoothing) {
+        this.gaussianSmoothing = gaussianSmoothing;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0, max = 1, step = 1)
+    public int getCurvatureFlowSmoothing() {
+        return curvatureFlowSmoothing;
+    }
+
+    public void setCurvatureFlowSmoothing(int curvatureFlowSmoothing) {
+        this.curvatureFlowSmoothing = curvatureFlowSmoothing;
     }
 }

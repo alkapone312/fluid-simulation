@@ -1,22 +1,32 @@
 package org.example;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.WireBox;
+import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
+import com.jme3.texture.Image;
+import com.jme3.texture.Texture2D;
+import com.jme3.texture.image.ColorSpace;
+import com.jme3.util.BufferUtils;
 import com.jme3.util.SkyFactory;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
 import org.example.bean.BeanEditor;
 import org.example.render.ssfr.*;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 public class Simulation3D extends SimpleApplication {
 
@@ -32,13 +42,13 @@ public class Simulation3D extends SimpleApplication {
         app.start();
     }
 
-    private com.jme3.texture.Texture2D generateFloorTexture(int size) {
-        com.jme3.texture.Image image = new com.jme3.texture.Image(
-            com.jme3.texture.Image.Format.RGBA8, size, size,
-            com.jme3.util.BufferUtils.createByteBuffer(size * size * 4),
-            null, com.jme3.texture.image.ColorSpace.sRGB);
+    private Texture2D generateFloorTexture(int size) {
+        Image image = new Image(
+            Image.Format.RGBA8, size, size,
+            BufferUtils.createByteBuffer(size * size * 4),
+            null, ColorSpace.sRGB);
 
-        java.nio.ByteBuffer data = image.getData(0);
+        ByteBuffer data = image.getData(0);
         int subTileCount = 128; // Number of small tiles per side
         int pixelsPerSubTile = size / subTileCount;
 
@@ -64,13 +74,11 @@ public class Simulation3D extends SimpleApplication {
             }
         }
         data.rewind();
-        return new com.jme3.texture.Texture2D(image);
+        return new Texture2D(image);
     }
 
     private void setupCameraAndLight() {
-//        Spatial sky = com.jme3.util.SkyFactory.createSky(assetManager,  );
-//        rootNode.attachChild(sky);
-        com.jme3.light.AmbientLight al = new com.jme3.light.AmbientLight();
+        AmbientLight al = new AmbientLight();
         al.setColor(ColorRGBA.White.mult(0.3f));
         rootNode.addLight(al);
 
@@ -80,11 +88,11 @@ public class Simulation3D extends SimpleApplication {
         rootNode.attachChild(sky);
 
         float floorSize = 100f;
-        com.jme3.scene.shape.Quad quad = new com.jme3.scene.shape.Quad(floorSize, floorSize);
+        Quad quad = new Quad(floorSize, floorSize);
         Geometry floor = new Geometry("Floor", quad);
 
         // Rotate to lay flat on XZ plane and center it
-        floor.rotate(-com.jme3.math.FastMath.HALF_PI, 0, 0);
+        floor.rotate(-FastMath.HALF_PI, 0, 0);
         floor.setLocalTranslation(-floorSize/2, -bean.getBoundsY()*0.5f - 0.1f, floorSize/2);
 
         Material floorMat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
@@ -125,15 +133,29 @@ public class Simulation3D extends SimpleApplication {
     }
 
     private List<Panel> panels = new ArrayList<>();
-    public void setupBeanEditor(Object bean) {
+    public <T> void setupBeanEditor(T bean, Consumer<T> consumer) {
         if (GuiGlobals.getInstance() == null) {
             GuiGlobals.initialize(this);
             GuiGlobals.getInstance().getStyles().setDefaultStyle("glass");
         }
 
-        Panel panel = BeanEditor.open(bean, bean.getClass().getSimpleName());
-        guiNode.attachChild(panel);
-        panels.add(panel);
+        Panel panel = null;
+        if (consumer == null) {
+            panel = BeanEditor.open(bean, bean.getClass().getSimpleName());
+        }
+
+        if (consumer != null) {
+            panel = BeanEditor.openWithCallback(bean, consumer, bean.getClass().getSimpleName());
+        }
+
+        if (panel != null) {
+            guiNode.attachChild(panel);
+            panels.add(panel);
+        }
+    }
+
+    public <T> void setupBeanEditor(T bean) {
+        setupBeanEditor(bean, (b) -> {});
     }
 
     public void updateGui() {
@@ -152,24 +174,35 @@ public class Simulation3D extends SimpleApplication {
     public void simpleInitApp() {
         var ssfrBean = new SsfrBean();
         var gaussianSmoothingBean = new GaussianSmoothingBean();
+        var curvatureFlowSmoothingBean = new CurvatureFlowSmoothingBean();
+        var curvatureFlowSmoothing = new CurvatureFlowSmoothing(assetManager, curvatureFlowSmoothingBean);
+        var gaussianSmoothing = new GaussianSmoothing(assetManager, gaussianSmoothingBean);
+        fluidSimulation = new FluidSimulation(24*24*24, assetManager, bean);
+        var processor = new SsfrProcessor(
+            assetManager,
+            fluidSimulation.getGeometry(),
+            ssfrBean,
+            gaussianSmoothing
+        );
         setupBeanEditor(bean);
-        setupBeanEditor(ssfrBean);
+        setupBeanEditor(ssfrBean, (bean) -> {
+            if (bean.getGaussianSmoothing() == 1) {
+                processor.setSsfrSmoothing(gaussianSmoothing);
+            }
+
+            if (bean.getCurvatureFlowSmoothing() == 1) {
+                processor.setSsfrSmoothing(curvatureFlowSmoothing);
+            }
+        });
         setupBeanEditor(gaussianSmoothingBean);
+        setupBeanEditor(curvatureFlowSmoothingBean);
         setupCameraAndLight();
 
-        fluidSimulation = new FluidSimulation(24*24*24, assetManager, bean);
 //        viewPort.addProcessor(new PlainParticleProcessor(
 //            fluidSimulation.getGeometry(),
 //            new Material(assetManager, "materials/particles/Particles.j3md")
 //        ));
-        viewPort.addProcessor(
-            new SsfrProcessor(
-                assetManager,
-                fluidSimulation.getGeometry(),
-                ssfrBean,
-                new GaussianSmoothing(assetManager, gaussianSmoothingBean)
-            )
-        );
+        viewPort.addProcessor(processor);
 
         setupBoundaryFrame();
     }
