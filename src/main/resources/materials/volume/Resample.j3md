@@ -1,0 +1,17 @@
+MaterialDef Resample {
+    MaterialParameters {
+        Float NearPlane
+        Float FarPlane
+        Int NumSlices
+        Float ParticleRadius
+    }
+    Technique {
+        VertexShader GLSL430: materials/volume/resample.vert
+        GeometryShader GLSL430: materials/volume/resample.geom
+        FragmentShader GLSL430: materials/volume/resample.frag
+        WorldParameters {
+            WorldViewMatrix
+            ProjectionMatrix
+        }
+    }
+}

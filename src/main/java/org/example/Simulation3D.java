@@ -21,11 +21,12 @@ import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
 import org.example.bean.BeanEditor;
 import org.example.render.ssfr.*;
+import org.example.render.volume.PerspectiveVolumeBean;
+import org.example.render.volume.PerspectiveVolumeProcessor;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class Simulation3D extends SimpleApplication {
@@ -178,31 +179,39 @@ public class Simulation3D extends SimpleApplication {
         var curvatureFlowSmoothing = new CurvatureFlowSmoothing(assetManager, curvatureFlowSmoothingBean);
         var gaussianSmoothing = new GaussianSmoothing(assetManager, gaussianSmoothingBean);
         fluidSimulation = new FluidSimulation(24*24*24, assetManager, bean);
-        var processor = new SsfrProcessor(
+        var ssfrProcessor = new SsfrProcessor(
             assetManager,
             fluidSimulation.getGeometry(),
             ssfrBean,
             gaussianSmoothing
         );
+        var volumeBean = new PerspectiveVolumeBean();
+        var volumeProcessor = new PerspectiveVolumeProcessor(
+            assetManager,
+            fluidSimulation.getGeometry(),
+            volumeBean
+        );
         setupBeanEditor(bean);
         setupBeanEditor(ssfrBean, (bean) -> {
             if (bean.getGaussianSmoothing() == 1) {
-                processor.setSsfrSmoothing(gaussianSmoothing);
+                ssfrProcessor.setSsfrSmoothing(gaussianSmoothing);
             }
 
             if (bean.getCurvatureFlowSmoothing() == 1) {
-                processor.setSsfrSmoothing(curvatureFlowSmoothing);
+                ssfrProcessor.setSsfrSmoothing(curvatureFlowSmoothing);
             }
         });
         setupBeanEditor(gaussianSmoothingBean);
         setupBeanEditor(curvatureFlowSmoothingBean);
+        setupBeanEditor(volumeBean);
         setupCameraAndLight();
 
 //        viewPort.addProcessor(new PlainParticleProcessor(
 //            fluidSimulation.getGeometry(),
 //            new Material(assetManager, "materials/particles/Particles.j3md")
 //        ));
-        viewPort.addProcessor(processor);
+//        viewPort.addProcessor(ssfrProcessor);
+        viewPort.addProcessor(volumeProcessor);
 
         setupBoundaryFrame();
     }

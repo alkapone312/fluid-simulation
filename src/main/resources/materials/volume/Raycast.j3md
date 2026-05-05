@@ -1,0 +1,17 @@
+MaterialDef Raycast {
+    MaterialParameters {
+        Texture2D DepthTexture
+        Texture3D GridTexture
+        Matrix4 ProjectionMatrixInverse
+        Float NearPlane
+        Float FarPlane
+        Int NumSlices
+        Vector3 LightDir
+
+        Float FluidDensity
+    }
+    Technique {
+        VertexShader GLSL430: materials/PostPass.vert
+        FragmentShader GLSL430: materials/volume/raycast.frag
+    }
+}
