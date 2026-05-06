@@ -129,8 +129,6 @@ public class ComputeShader {
         }
 
         GL43.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, bufferId);
-
-        // Map the GPU memory to a ByteBuffer
         ByteBuffer mappedBuffer = GL43.glMapBuffer(GL43.GL_SHADER_STORAGE_BUFFER, GL43.GL_READ_ONLY);
 
         T result;

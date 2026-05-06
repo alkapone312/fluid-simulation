@@ -34,7 +34,6 @@ public class ComputeShaderLoader {
 
         StringBuilder sb = new StringBuilder();
 
-        // Use the ClassLoader to find the file in resources
         try (InputStream in = ComputeShaderLoader.class.getResourceAsStream(path)) {
             if (in == null) {
                 throw new RuntimeException("Shader file not found on classpath: " + path);
@@ -46,9 +45,6 @@ public class ComputeShaderLoader {
                 Matcher matcher = INCLUDE_PATTERN.matcher(line);
                 if (matcher.find()) {
                     String includePath = matcher.group(1);
-                    // Standardize path: if the include doesn't start with '/',
-                    // you might want to resolve it relative to the current file's folder.
-                    // For now, we assume absolute classpath paths.
                     sb.append("// Start Include: ").append(includePath).append("\n");
                     sb.append(resolveIncludes(includePath, loadedFiles));
                     sb.append("\n// End Include: ").append(includePath).append("\n");

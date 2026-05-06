@@ -4,6 +4,7 @@ MaterialDef Resample {
         Float FarPlane
         Int NumSlices
         Float ParticleRadius
+        Int CurrentSlice
     }
     Technique {
         VertexShader GLSL430: materials/volume/resample.vert

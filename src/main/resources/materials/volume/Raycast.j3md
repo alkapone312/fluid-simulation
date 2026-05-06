@@ -1,12 +1,19 @@
 MaterialDef Raycast {
     MaterialParameters {
         Texture2D DepthTexture
+        Texture2D SceneTexture
+        Texture2D EnvMap
         Texture3D GridTexture
         Matrix4 ProjectionMatrixInverse
+        Matrix4 ViewMatrixInverse
         Float NearPlane
         Float FarPlane
         Int NumSlices
         Vector3 LightDir
+
+        Int SlabStartZ
+        Int SlabEndZ
+        Int SlabActualDepth
 
         Float FluidDensity
     }

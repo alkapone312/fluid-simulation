@@ -11,9 +11,7 @@ void main() {
 
     if (distSq > 1.0) discard;
 
-    // The length of the chord through the sphere at this pixel
     float z = sqrt(1.0 - distSq);
 
-    // Thickness is front-to-back distance through the sphere
     fragThickness = 2.0 * z * v_SphereRadius * m_thicknessMultiplier;
 }

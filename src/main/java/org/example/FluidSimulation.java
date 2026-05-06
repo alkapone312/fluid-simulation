@@ -37,7 +37,6 @@ public class FluidSimulation {
         initBuffers();
         Mesh mesh = new Mesh();
         mesh.setMode(Mesh.Mode.Points);
-        // Placeholder for JME3 to create the vertex array object
         mesh.setBuffer(VertexBuffer.Type.Position, 3, new float[numParticles * 3]);
         mesh.setBound(new BoundingBox(Vector3f.ZERO, 1000f, 1000f, 1000f));
         mesh.setStatic();
@@ -57,7 +56,6 @@ public class FluidSimulation {
         IntBuffer sortedItemsBuffer = BufferUtils.createIntBuffer(numParticles);
         IntBuffer sortedKeysBuffer = BufferUtils.createIntBuffer(numParticles);
 
-        // Grid Initialization logic
         int particlesPerRow = (int) Math.round(Math.pow(numParticles, 1.0/3.0));
         float spacing = 3.0f / 19.0f;
         float boxSize = ((particlesPerRow - 1) * spacing) / 2.0f;
@@ -91,7 +89,7 @@ public class FluidSimulation {
 
         computeShader.setData(0, posBuffer);
         computeShader.setData(1, velBuffer);
-        computeShader.setData(2, posBuffer); // Predicted start as current
+        computeShader.setData(2, posBuffer);
         computeShader.setData(3, densBuffer);
         computeShader.setData(4, spatialIndices);
         computeShader.setData(5, spatialKeys);

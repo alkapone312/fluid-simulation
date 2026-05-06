@@ -19,17 +19,14 @@ public class BeanEditorLemur<T> {
     private final T rootBean;
     private final Consumer<T> consumer;
 
-    // lista watcherów, które będą wywoływane w wątku pollingowym
     private final List<Runnable> watchers = new ArrayList<>();
 
-    // scheduler
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public BeanEditorLemur(T bean, Consumer<T> consumer) {
         this.rootBean = bean;
         this.consumer = consumer;
 
-        // startujemy polling w osobnym wątku co 200ms
         executor.scheduleAtFixedRate(() -> {
             for (Runnable r : watchers) {
                 r.run();
@@ -83,17 +80,7 @@ public class BeanEditorLemur<T> {
         Nested nested
     ) {
         String title = nested.label().isEmpty() ? pd.getName() : nested.label();
-
-        Label header = parent.addChild(new Label("▾ " + title));
         Container nestedContainer = parent.addChild(new Container(new SpringGridLayout(Axis.Y, Axis.X)));
-
-        // toggle działa od razu w Lemurze
-//        header.addClickCommands(src -> {
-//            boolean visible = !nestedContainer.isVisible();
-//            nestedContainer.setVisible(visible);
-//            header.setText((visible ? "▾ " : "▸ ") + title);
-//        });
-
         addBeanProperties(nestedContainer, nestedBean);
     }
 
@@ -135,7 +122,6 @@ public class BeanEditorLemur<T> {
 
         VersionedReference<Double> ref = slider.getModel().createReference();
 
-        // dodajemy watcher do listy
         watchers.add(() -> {
             if (ref.update()) {
                 double newVal = ref.get();

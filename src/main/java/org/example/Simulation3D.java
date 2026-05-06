@@ -37,8 +37,8 @@ public class Simulation3D extends SimpleApplication {
     public static void main(String[] args) {
         Simulation3D app = new Simulation3D();
         AppSettings settings = new AppSettings(true);
-        settings.setResolution(1920, 1080);
-        settings.setFullscreen(true);
+        settings.setResolution(1024, 1024);
+        settings.setFullscreen(false);
         app.setSettings(settings);
         app.start();
     }
@@ -55,7 +55,6 @@ public class Simulation3D extends SimpleApplication {
 
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                // Determine large quadrant
                 ColorRGBA baseColor;
                 if (x < size / 2) {
                     baseColor = (y < size / 2) ? ColorRGBA.Red : ColorRGBA.Blue;
@@ -63,7 +62,6 @@ public class Simulation3D extends SimpleApplication {
                     baseColor = (y < size / 2) ? ColorRGBA.Green : ColorRGBA.Yellow;
                 }
 
-                // Determine small tile variation (checkerboard brightness)
                 int tx = x / pixelsPerSubTile;
                 int ty = y / pixelsPerSubTile;
                 float brightness = ((tx + ty) % 2 == 0) ? 0.3f : 0.6f;
@@ -71,7 +69,7 @@ public class Simulation3D extends SimpleApplication {
                 data.put((byte) (baseColor.r * brightness * 255));
                 data.put((byte) (baseColor.g * brightness * 255));
                 data.put((byte) (baseColor.b * brightness * 255));
-                data.put((byte) 255); // Alpha
+                data.put((byte) 255);
             }
         }
         data.rewind();
@@ -92,7 +90,6 @@ public class Simulation3D extends SimpleApplication {
         Quad quad = new Quad(floorSize, floorSize);
         Geometry floor = new Geometry("Floor", quad);
 
-        // Rotate to lay flat on XZ plane and center it
         floor.rotate(-FastMath.HALF_PI, 0, 0);
         floor.setLocalTranslation(-floorSize/2, -bean.getBoundsY()*0.5f - 0.1f, floorSize/2);
 
@@ -189,7 +186,8 @@ public class Simulation3D extends SimpleApplication {
         var volumeProcessor = new PerspectiveVolumeProcessor(
             assetManager,
             fluidSimulation.getGeometry(),
-            volumeBean
+            volumeBean,
+            (Texture2D) assetManager.loadTexture("textures/PanoramaSky.png") // ten sam co sky factory
         );
         setupBeanEditor(bean);
         setupBeanEditor(ssfrBean, (bean) -> {
@@ -203,15 +201,17 @@ public class Simulation3D extends SimpleApplication {
         });
         setupBeanEditor(gaussianSmoothingBean);
         setupBeanEditor(curvatureFlowSmoothingBean);
-        setupBeanEditor(volumeBean);
+        setupBeanEditor(volumeBean, (bean) -> {
+            volumeProcessor.setupGridTexture();
+        });
         setupCameraAndLight();
 
 //        viewPort.addProcessor(new PlainParticleProcessor(
 //            fluidSimulation.getGeometry(),
 //            new Material(assetManager, "materials/particles/Particles.j3md")
 //        ));
-//        viewPort.addProcessor(ssfrProcessor);
-        viewPort.addProcessor(volumeProcessor);
+        viewPort.addProcessor(ssfrProcessor);
+//        viewPort.addProcessor(volumeProcessor);
 
         setupBoundaryFrame();
     }

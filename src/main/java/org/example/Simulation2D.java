@@ -120,8 +120,6 @@ public class Simulation2D extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         float deltaTime = tpf / bean.getIterationsPerFrame();
         computeShader.bind();
-        // KERNEL UNIFORMS
-
         computeShader.setUniform("SpikyPow3ScalingFactor", (float) (10f / (Math.PI * Math.pow(bean.getSmoothingRadius(), 5))));
         computeShader.setUniform("SpikyPow2ScalingFactor", (float) (6f / (Math.PI * Math.pow(bean.getSmoothingRadius(), 4))));
         computeShader.setUniform("SpikyPow3DerivativeScalingFactor", (float) (30f / (Math.pow(bean.getSmoothingRadius(), 5) * Math.PI)));

@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Nested {
-    String label() default ""; // optional label for UI
+    String label() default "";
 }
 

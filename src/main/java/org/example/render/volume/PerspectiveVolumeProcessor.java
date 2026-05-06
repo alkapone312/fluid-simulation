@@ -3,6 +3,7 @@ package org.example.render.volume;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
+import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector3f;
 import com.jme3.post.SceneProcessor;
 import com.jme3.profile.AppProfiler;
@@ -18,7 +19,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     private ViewPort vp;
     private Geometry particleGeometry;
 
-    private FrameBuffer gridFbo;
+    private FrameBuffer[] sliceFbos;
     private Texture3D gridTexture;
 
     private Material resampleMat;
@@ -28,10 +29,11 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     private FrameBuffer sceneFbo;
     private Texture2D sceneTex;
     private Texture2D sceneDepthTex;
+    private Texture2D envMap;
 
-    private int gridX = 256;
-    private int gridY = 256;
-    private int gridZ = 128; // Number of slices (m)
+    private int gridX = 512;
+    private int gridY = 512;
+    private int gridZ = 2048;
 
     private float nearPlane;
     private float farPlane;
@@ -42,8 +44,10 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     public PerspectiveVolumeProcessor(
         AssetManager assetManager,
         Geometry particleGeometry,
-        PerspectiveVolumeBean bean
+        PerspectiveVolumeBean bean,
+        Texture2D envMap
     ) {
+        this.envMap = envMap;
         this.bean = bean;
         this.particleGeometry = particleGeometry;
 
@@ -53,7 +57,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         this.resampleMat.getAdditionalRenderState().setDepthWrite(false);
 
         this.raycastMat = new Material(assetManager, "materials/volume/Raycast.j3md");
-        this.raycastMat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.PremultAlpha);
+        this.raycastMat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Off);
     }
 
     @Override
@@ -62,19 +66,10 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         this.vp = vp;
         var w = vp.getCamera().getWidth();
         var h = vp.getCamera().getHeight();
-        farPlane = vp.getCamera().getFrustumFar();
+        farPlane = 100;
         nearPlane = vp.getCamera().getFrustumNear();
-        // Create the 3D Perspective Grid Texture
-        gridTexture = new Texture3D(gridX, gridY, gridZ, Image.Format.R16F);
-        gridTexture.setMinFilter(Texture.MinFilter.BilinearNoMipMaps);
-        gridTexture.setMagFilter(Texture.MagFilter.Bilinear);
-        gridTexture.getImage().setData(new java.util.ArrayList<>());
 
-        // FBO for layered rendering into the 3D texture
-        gridFbo = new FrameBuffer(gridX, gridY, 1);
-        var textureTarget = FrameBuffer.FrameBufferTarget.newTarget(gridTexture);
-        textureTarget.layer(0);
-        gridFbo.addColorTarget(textureTarget);
+        setupGridTexture();
 
         sceneTex = new Texture2D(w, h, Image.Format.RGBA32F);
         sceneDepthTex = new Texture2D(w, h, Image.Format.Depth);
@@ -89,6 +84,24 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         fsQuad.setLocalTranslation(0, 0, -1);
     }
 
+    public void setupGridTexture() {
+        gridX = bean.getPerspectiveGridWidth();
+        gridY = bean.getPerspectiveGridHeight();
+        gridZ = bean.getPerspectiveGridDepth();
+        gridTexture = new Texture3D(gridX, gridY, gridZ, Image.Format.R16F);
+        gridTexture.setMinFilter(Texture.MinFilter.BilinearNoMipMaps);
+        gridTexture.setMagFilter(Texture.MagFilter.Bilinear);
+        gridTexture.getImage().setData(new java.util.ArrayList<>());
+
+        sliceFbos = new FrameBuffer[gridZ];
+        for (int i = 0; i < gridZ; i++) {
+            sliceFbos[i] = new FrameBuffer(gridX, gridY, 1);
+            var textureTarget = FrameBuffer.FrameBufferTarget.newTarget(gridTexture);
+            textureTarget.layer(i);
+            sliceFbos[i].addColorTarget(textureTarget);
+        }
+    }
+
     @Override
     public void postQueue(RenderQueue rq) {}
 
@@ -98,19 +111,21 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     public boolean isInitialized() { return rm != null; }
     @Override
     public void preFrame(float tpf) {}
+
     @Override
     public void postFrame(FrameBuffer out) {
         int screenW = vp.getCamera().getWidth();
         int screenH = vp.getCamera().getHeight();
+
         rm.getRenderer().copyFrameBuffer(out, sceneFbo, true, true);
 
-        // Pobranie tekstury głębi z głównego bufora (jeśli silnik na to pozwala)
-        // lub przekazanie jej z poprzedniego passu
         raycastMat.setTexture("DepthTexture", sceneDepthTex);
+        raycastMat.setTexture("SceneTexture", sceneTex);
 
-        // 1. Pass: Voxelizacja do tekstury 3D
-        rm.getRenderer().setFrameBuffer(gridFbo);
-        // USTAWIAMY VIEWPORT NA ROZMIAR SIATKI
+        if (envMap != null) {
+            raycastMat.setTexture("EnvMap", envMap);
+        }
+
         rm.getRenderer().setViewPort(0, 0, gridX, gridY);
         rm.getRenderer().clearBuffers(true, false, false);
 
@@ -119,21 +134,34 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         resampleMat.setInt("NumSlices", gridZ);
         resampleMat.setFloat("ParticleRadius", particleRadius);
 
-        rm.setForcedMaterial(resampleMat);
-        rm.renderGeometry(particleGeometry);
+        for (int i = 0; i < gridZ; i++) {
+            rm.getRenderer().setFrameBuffer(sliceFbos[i]);
+            rm.getRenderer().clearBuffers(true, false, false);
+
+            resampleMat.setInt("CurrentSlice", i);
+
+            rm.setForcedMaterial(resampleMat);
+            rm.renderGeometry(particleGeometry);
+        }
         rm.setForcedMaterial(null);
 
-        // 2. Pass: Ray-casting na ekran
         rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
         // PRZYWRACAMY VIEWPORT NA PEŁNY EKRAN
         rm.getRenderer().setViewPort(0, 0, screenW, screenH);
+
+        Matrix4f projInv = vp.getCamera().getProjectionMatrix().clone();
+        projInv.invertLocal();
+
+        Matrix4f viewInv = vp.getCamera().getViewMatrix().clone();
+        viewInv.invertLocal();
 
         raycastMat.setTexture("GridTexture", gridTexture);
         raycastMat.setFloat("NearPlane", nearPlane);
         raycastMat.setFloat("FarPlane", farPlane);
         raycastMat.setInt("NumSlices", gridZ);
         raycastMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, 0.5f).normalizeLocal());
-        raycastMat.setMatrix4("ProjectionMatrixInverse", vp.getCamera().getProjectionMatrix().invert());
+        raycastMat.setMatrix4("ProjectionMatrixInverse", projInv);
+        raycastMat.setMatrix4("ViewMatrixInverse", viewInv);
         raycastMat.setFloat("FluidDensity", bean.getFluidDensity());
 
         fsQuad.setMaterial(raycastMat);

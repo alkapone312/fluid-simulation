@@ -106,7 +106,6 @@ public class SsfrProcessor implements SceneProcessor {
 
     @Override
     public void postFrame(FrameBuffer frameBuffer) {
-        // Copy rendered scene and scene depth
         rm.getRenderer().copyFrameBuffer(frameBuffer, sceneFbo, true, true);
 
         // 1. Render Depth
