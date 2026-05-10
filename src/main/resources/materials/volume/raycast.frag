@@ -6,7 +6,6 @@ uniform int m_NumSlices;
 uniform vec3 m_LightDir;
 uniform mat4x4 m_ProjectionMatrixInverse;
 uniform sampler2D m_SceneTexture;
-uniform sampler2D m_EnvMap;
 uniform mat4x4 m_ViewMatrixInverse;
 
 uniform float m_FluidDensity;
@@ -29,19 +28,6 @@ float getLinearSceneDepth(float rawDepth) {
     return viewPos.z / viewPos.w;
 }
 
-vec2 getEquirectangularUV(vec3 v) {
-    vec3 dir = normalize(v);
-    // atan(dir.z, dir.x) -> długość geograficzna (-PI do PI)
-    // asin(dir.y)        -> szerokość geograficzna (-PI/2 do PI/2)
-    vec2 uv = vec2(atan(dir.z, dir.x), asin(dir.y));
-    // (0.1591 to w przybliżeniu 1 / (2 * PI))
-    // (0.3183 to w przybliżeniu 1 / PI)
-    uv *= vec2(0.1591, 0.3183);
-    uv += 0.5;
-
-    return uv;
-}
-
 void main() {
     vec3 color = vec3(0.0);
     float alpha = 0.0;
@@ -54,7 +40,7 @@ void main() {
     vec3 step = 1.0 / texSize;
 
     float extinctionScale = 0.001;
-    vec3 waterBaseColor = vec3(0.1, 0.4, 0.8);
+    vec3 waterBaseColor = vec3(0.1, 0.5, 0.7);
 
     float eta1 = 1.0;
     float eta2 = 1.333;
@@ -88,29 +74,16 @@ void main() {
             if (!wasInsideVolume) {
                 vec3 incident = normalize(vec3(v_TexCoord * 2.0 - 1.0, -1.0));
 
-                vec3 reflDir = reflect(incident, normal);
                 vec3 refrDir = refract(incident, normal, etaRatio);
-
-                float R0 = pow((eta1 - eta2) / (eta1 + eta2), 2.0);
-                float cosI = max(dot(-incident, normal), 0.0);
-                float fresnel = R0 + (1.0 - R0) * pow(1.0 - cosI, 5.0);
-
-                if (length(refrDir) < 0.001) fresnel = 1.0;
-
                 float distortionStrength = 0.1;
                 backgroundUV = v_TexCoord + (refrDir.xy * distortionStrength);
 
-                vec3 worldReflDir = mat3(m_ViewMatrixInverse) * reflDir;
-                vec2 envUV = getEquirectangularUV(worldReflDir);
-                vec3 reflectionColor = texture(m_EnvMap, envUV).rgb;
-
-                color += (1.0 - alpha) * reflectionColor * fresnel;
-                alpha += (1.0 - alpha) * fresnel;
-
-                vec3 viewDir = vec3(0.0, 0.0, 1.0);
+                vec3 viewDir = -incident;
                 vec3 halfDir = normalize(m_LightDir + viewDir);
-                float spec = pow(max(dot(normal, halfDir), 0.0), 128.0);
-                sampleColor += vec3(0.6) * spec;
+                float spec = pow(max(dot(normal, halfDir), 0.0), 16.0);
+
+                color += (1.0 - alpha) * spec;
+                alpha += (1.0 - alpha) * spec * 0.5;
             }
 
             color += (1.0 - alpha) * sampleColor * sampleAlpha;

@@ -140,7 +140,7 @@ public class SsfrProcessor implements SceneProcessor {
         shadeMat.setTexture("SmoothedDepthTex", ssfrBean.getApplySmoothing() == 1 ? ssfrSmoothing.getOutputTexture() : depthTex);
         shadeMat.setTexture("ThicknessTex", thicknessTex);
         shadeMat.setVector2("TexelSize", new Vector2f(1f/w, 1f/h));
-        shadeMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, 0.5f).normalizeLocal());
+        shadeMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, -0.2f).normalizeLocal());
         shadeMat.setMatrix4("ProjectionMatrixInverse", vp.getCamera().getProjectionMatrix().invert());
 
         fsQuad.setMaterial(shadeMat);

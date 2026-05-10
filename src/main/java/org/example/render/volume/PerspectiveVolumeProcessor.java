@@ -31,13 +31,12 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     private Texture2D sceneDepthTex;
     private Texture2D envMap;
 
-    private int gridX = 512;
-    private int gridY = 512;
-    private int gridZ = 2048;
+    private int gridX;
+    private int gridY;
+    private int gridZ;
 
     private float nearPlane;
     private float farPlane;
-    private float particleRadius = 0.5f;
 
     private PerspectiveVolumeBean bean;
 
@@ -132,7 +131,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         resampleMat.setFloat("NearPlane", nearPlane);
         resampleMat.setFloat("FarPlane", farPlane);
         resampleMat.setInt("NumSlices", gridZ);
-        resampleMat.setFloat("ParticleRadius", particleRadius);
+        resampleMat.setFloat("ParticleRadius", bean.getParticleRadius());
 
         for (int i = 0; i < gridZ; i++) {
             rm.getRenderer().setFrameBuffer(sliceFbos[i]);
@@ -159,7 +158,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         raycastMat.setFloat("NearPlane", nearPlane);
         raycastMat.setFloat("FarPlane", farPlane);
         raycastMat.setInt("NumSlices", gridZ);
-        raycastMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, 0.5f).normalizeLocal());
+        raycastMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, -0.2f).normalizeLocal());
         raycastMat.setMatrix4("ProjectionMatrixInverse", projInv);
         raycastMat.setMatrix4("ViewMatrixInverse", viewInv);
         raycastMat.setFloat("FluidDensity", bean.getFluidDensity());

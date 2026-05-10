@@ -10,7 +10,9 @@ public class PerspectiveVolumeBean {
 
     private int perspectiveGridDepth = 128;
 
-    private float fluidDensity = 5.0f;
+    private float fluidDensity = 10.0f;
+
+    private float particleRadius = 0.75f;
 
     @Control(type = ControlType.RANGE, min = 1.0, max = 2000.0, step = 1)
     public float getFluidDensity() {
@@ -46,5 +48,14 @@ public class PerspectiveVolumeBean {
 
     public void setPerspectiveGridDepth(int perspectiveGridDepth) {
         this.perspectiveGridDepth = perspectiveGridDepth;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0.25, max = 2.0, step = 1)
+    public float getParticleRadius() {
+        return particleRadius;
+    }
+
+    public void setParticleRadius(float particleRadius) {
+        this.particleRadius = particleRadius;
     }
 }

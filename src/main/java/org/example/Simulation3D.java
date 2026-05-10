@@ -20,6 +20,7 @@ import com.jme3.util.SkyFactory;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
 import org.example.bean.BeanEditor;
+import org.example.VideoFrameRecorder;
 import org.example.render.ssfr.*;
 import org.example.render.volume.PerspectiveVolumeBean;
 import org.example.render.volume.PerspectiveVolumeProcessor;
@@ -84,6 +85,7 @@ public class Simulation3D extends SimpleApplication {
         Spatial sky = SkyFactory.createSky(assetManager,
             "textures/PanoramaSky.png",
             SkyFactory.EnvMapType.EquirectMap);
+        sky.setLocalRotation(new com.jme3.math.Quaternion().fromAngleAxis(-30 * FastMath.DEG_TO_RAD, Vector3f.UNIT_Y));
         rootNode.attachChild(sky);
 
         float floorSize = 100f;
@@ -99,7 +101,7 @@ public class Simulation3D extends SimpleApplication {
 
         rootNode.attachChild(floor);
 
-        cam.setLocation(new Vector3f(0, 0, 15));
+        cam.setLocation(new Vector3f(0, 0, 20));
         cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
         flyCam.setEnabled(true);
         flyCam.setMoveSpeed(5);
@@ -212,6 +214,7 @@ public class Simulation3D extends SimpleApplication {
 //        ));
         viewPort.addProcessor(ssfrProcessor);
 //        viewPort.addProcessor(volumeProcessor);
+//        stateManager.attach(new VideoFrameRecorder("render_output", 30, 300));
 
         setupBoundaryFrame();
     }

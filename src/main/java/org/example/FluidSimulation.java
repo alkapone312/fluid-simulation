@@ -57,7 +57,7 @@ public class FluidSimulation {
         IntBuffer sortedKeysBuffer = BufferUtils.createIntBuffer(numParticles);
 
         int particlesPerRow = (int) Math.round(Math.pow(numParticles, 1.0/3.0));
-        float spacing = 3.0f / 19.0f;
+        float spacing = 3.0f / 15.0f;
         float boxSize = ((particlesPerRow - 1) * spacing) / 2.0f;
 
         for (int i = 0; i < numParticles; i++) {
