@@ -106,6 +106,10 @@ public class SsfrProcessor implements SceneProcessor {
 
     @Override
     public void postFrame(FrameBuffer frameBuffer) {
+        if (rm == null) {
+            return;
+        }
+
         rm.getRenderer().copyFrameBuffer(frameBuffer, sceneFbo, true, true);
 
         // 1. Render Depth
@@ -140,7 +144,12 @@ public class SsfrProcessor implements SceneProcessor {
         shadeMat.setTexture("SmoothedDepthTex", ssfrBean.getApplySmoothing() == 1 ? ssfrSmoothing.getOutputTexture() : depthTex);
         shadeMat.setTexture("ThicknessTex", thicknessTex);
         shadeMat.setVector2("TexelSize", new Vector2f(1f/w, 1f/h));
-        shadeMat.setVector3("LightDir", new Vector3f(0.5f, 0.5f, -0.2f).normalizeLocal());
+
+        Vector3f worldLightDir = new Vector3f(0.5f, 0.5f, -0.2f).normalizeLocal();
+        Vector3f viewSpaceLightDir = new Vector3f();
+        vp.getCamera().getViewMatrix().multNormal(worldLightDir, viewSpaceLightDir);
+        shadeMat.setVector3("LightDir", viewSpaceLightDir);
+
         shadeMat.setMatrix4("ProjectionMatrixInverse", vp.getCamera().getProjectionMatrix().invert());
 
         fsQuad.setMaterial(shadeMat);

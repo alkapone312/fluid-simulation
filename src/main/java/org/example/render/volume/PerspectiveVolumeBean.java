@@ -5,14 +5,10 @@ import org.example.bean.ControlType;
 
 public class PerspectiveVolumeBean {
     private int perspectiveGridWidth = 128;
-
     private int perspectiveGridHeight = 128;
 
-    private int perspectiveGridDepth = 128;
-
-    private float fluidDensity = 10.0f;
-
-    private float particleRadius = 0.75f;
+    private float fluidDensity = 1.0f;
+    private float particleRadius = 0.35f;
 
     @Control(type = ControlType.RANGE, min = 1.0, max = 2000.0, step = 1)
     public float getFluidDensity() {
@@ -23,7 +19,7 @@ public class PerspectiveVolumeBean {
         this.fluidDensity = fluidDensity;
     }
 
-    @Control(type = ControlType.RANGE, min = 64.0, max = 512, step = 1)
+    @Control(type = ControlType.RANGE, min = 16.0, max = 1024, step = 1)
     public int getPerspectiveGridWidth() {
         return perspectiveGridWidth;
     }
@@ -32,7 +28,7 @@ public class PerspectiveVolumeBean {
         this.perspectiveGridWidth = perspectiveGridWidth;
     }
 
-    @Control(type = ControlType.RANGE, min = 64.0, max = 512, step = 1)
+    @Control(type = ControlType.RANGE, min = 16.0, max = 1024, step = 1)
     public int getPerspectiveGridHeight() {
         return perspectiveGridHeight;
     }
@@ -41,16 +37,7 @@ public class PerspectiveVolumeBean {
         this.perspectiveGridHeight = perspectiveGridHeight;
     }
 
-    @Control(type = ControlType.RANGE, min = 64.0, max = 2048, step = 1)
-    public int getPerspectiveGridDepth() {
-        return perspectiveGridDepth;
-    }
-
-    public void setPerspectiveGridDepth(int perspectiveGridDepth) {
-        this.perspectiveGridDepth = perspectiveGridDepth;
-    }
-
-    @Control(type = ControlType.RANGE, min = 0.25, max = 2.0, step = 1)
+    @Control(type = ControlType.RANGE, min = 0.25, max = 5.0, step = 0.1)
     public float getParticleRadius() {
         return particleRadius;
     }

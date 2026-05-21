@@ -29,7 +29,6 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     private FrameBuffer sceneFbo;
     private Texture2D sceneTex;
     private Texture2D sceneDepthTex;
-    private Texture2D envMap;
 
     private int gridX;
     private int gridY;
@@ -43,10 +42,8 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     public PerspectiveVolumeProcessor(
         AssetManager assetManager,
         Geometry particleGeometry,
-        PerspectiveVolumeBean bean,
-        Texture2D envMap
+        PerspectiveVolumeBean bean
     ) {
-        this.envMap = envMap;
         this.bean = bean;
         this.particleGeometry = particleGeometry;
 
@@ -65,9 +62,12 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         this.vp = vp;
         var w = vp.getCamera().getWidth();
         var h = vp.getCamera().getHeight();
+
+        // Zostawiam Twoje 100, chociaż dla pełnej precyzji można by uzyć vp.getCamera().getFrustumFar()
         farPlane = 100;
         nearPlane = vp.getCamera().getFrustumNear();
 
+        // Uruchamiamy generowanie tekstury DOPIERO po przypisaniu vp
         setupGridTexture();
 
         sceneTex = new Texture2D(w, h, Image.Format.RGBA32F);
@@ -84,9 +84,39 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     }
 
     public void setupGridTexture() {
+        // Z pobieramy z beana X oraz Y
         gridX = bean.getPerspectiveGridWidth();
         gridY = bean.getPerspectiveGridHeight();
-        gridZ = bean.getPerspectiveGridDepth();
+
+        // -----------------------------------------------------------------
+        // OBLICZANIE POPRAWNEJ LICZBY PLASTRÓW (Z) WG FRAEDRICH ET AL.
+        // -----------------------------------------------------------------
+        float n = nearPlane;
+        float f = farPlane;
+
+        // W JMonkeyEngine najszybciej i najdokładniej wyciągnąć tg(FOV/2) z frustuma:
+        float top = vp.getCamera().getFrustumTop();
+
+        // Krok 1: Obliczenie sigmy (współczynnika rozszerzania się perspektywy).
+        // Równanie z artykułu: sigma = (2 * tan(fov_y / 2)) / res_y[cite: 119].
+        // W JME: 2 * tan(fov_y / 2) to po prostu (top - bottom) / n
+        float twoTanFovY = 2.0f * (top / n);
+        float sigma = twoTanFovY / (float) gridY;
+
+        // Krok 2: Wstępne wyliczenie liczby plastrów m[cite: 134].
+        float m_initial = (float) Math.log(f / n) / sigma;
+
+        // Krok 3: Obliczenie lambdy (korekcja dla promieni biegnących na brzegach frustuma)[cite: 131].
+        float termX = (gridX * sigma) / 2.0f;
+        float termY = (gridY * sigma) / 2.0f;
+        float lambda = (float) Math.sqrt(termX * termX + termY * termY + 1.0f);
+
+        // Krok 4: Ostateczna liczba plastrów (m musi być przemnożone przez lambdę)[cite: 137].
+        gridZ = Math.round(m_initial * lambda);
+        // -----------------------------------------------------------------
+
+        System.out.println(gridX + " " + gridY + " " + gridZ);
+
         gridTexture = new Texture3D(gridX, gridY, gridZ, Image.Format.R16F);
         gridTexture.setMinFilter(Texture.MinFilter.BilinearNoMipMaps);
         gridTexture.setMagFilter(Texture.MagFilter.Bilinear);
@@ -105,9 +135,14 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     public void postQueue(RenderQueue rq) {}
 
     @Override
-    public void reshape(ViewPort viewPort, int w, int h) {}
+    public void reshape(ViewPort viewPort, int w, int h) {
+        // Jeśli okno zmienia rozmiar, frustum też ulega zmianie,
+        // więc teoretycznie należałoby tutaj przebudować siatkę (setupGridTexture).
+    }
+
     @Override
     public boolean isInitialized() { return rm != null; }
+
     @Override
     public void preFrame(float tpf) {}
 
@@ -120,10 +155,6 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
 
         raycastMat.setTexture("DepthTexture", sceneDepthTex);
         raycastMat.setTexture("SceneTexture", sceneTex);
-
-        if (envMap != null) {
-            raycastMat.setTexture("EnvMap", envMap);
-        }
 
         rm.getRenderer().setViewPort(0, 0, gridX, gridY);
         rm.getRenderer().clearBuffers(true, false, false);
@@ -169,6 +200,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
 
     @Override
     public void cleanup() {}
+
     @Override
     public void setProfiler(AppProfiler profiler) {}
 }

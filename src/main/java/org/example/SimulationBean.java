@@ -4,7 +4,7 @@ import org.example.bean.Control;
 import org.example.bean.ControlType;
 
 public class SimulationBean {
-    private int iterationsPerFrame = 0;
+    private int iterationsPerFrame = 1;
 
     private float gravityForce = 12.0f;
 
@@ -23,6 +23,17 @@ public class SimulationBean {
     private float boundsY = 10f;
 
     private float boundsZ = 10f;
+
+    private int renderMode = 0;
+
+    @Control(type = ControlType.RANGE, min = 0, max = 2, step = 1)
+    public int getRenderMode() {
+        return renderMode;
+    }
+
+    public void setRenderMode(int renderMode) {
+        this.renderMode = renderMode;
+    }
 
     @Control(type = ControlType.RANGE, min = 0, max = 10.0, step = 1)
     public int getIterationsPerFrame() {

@@ -7,6 +7,7 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
+import com.jme3.post.SceneProcessor;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.WireBox;
@@ -21,6 +22,7 @@ import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
 import org.example.bean.BeanEditor;
 import org.example.VideoFrameRecorder;
+import org.example.render.PlainParticleProcessor;
 import org.example.render.ssfr.*;
 import org.example.render.volume.PerspectiveVolumeBean;
 import org.example.render.volume.PerspectiveVolumeProcessor;
@@ -34,6 +36,8 @@ public class Simulation3D extends SimpleApplication {
 
     private FluidSimulation fluidSimulation;
     private SimulationBean bean = new SimulationBean();
+
+    private int currentRenderMode = -1;
 
     public static void main(String[] args) {
         Simulation3D app = new Simulation3D();
@@ -170,6 +174,10 @@ public class Simulation3D extends SimpleApplication {
         }
     }
 
+    private PerspectiveVolumeProcessor volumeProcessor;
+    private SsfrProcessor ssfrProcessor;
+    private PlainParticleProcessor particleProcessor;
+
     @Override
     public void simpleInitApp() {
         var ssfrBean = new SsfrBean();
@@ -178,20 +186,28 @@ public class Simulation3D extends SimpleApplication {
         var curvatureFlowSmoothing = new CurvatureFlowSmoothing(assetManager, curvatureFlowSmoothingBean);
         var gaussianSmoothing = new GaussianSmoothing(assetManager, gaussianSmoothingBean);
         fluidSimulation = new FluidSimulation(24*24*24, assetManager, bean);
-        var ssfrProcessor = new SsfrProcessor(
+        ssfrProcessor = new SsfrProcessor(
             assetManager,
             fluidSimulation.getGeometry(),
             ssfrBean,
-            gaussianSmoothing
+            ssfrBean.getGaussianSmoothing() == 1 ? gaussianSmoothing : curvatureFlowSmoothing
         );
         var volumeBean = new PerspectiveVolumeBean();
-        var volumeProcessor = new PerspectiveVolumeProcessor(
+        volumeProcessor = new PerspectiveVolumeProcessor(
             assetManager,
             fluidSimulation.getGeometry(),
-            volumeBean,
-            (Texture2D) assetManager.loadTexture("textures/PanoramaSky.png") // ten sam co sky factory
+            volumeBean
         );
-        setupBeanEditor(bean);
+        particleProcessor = new PlainParticleProcessor(
+            fluidSimulation.getGeometry(),
+            new Material(assetManager, "materials/particles/Particles.j3md")
+        );
+        setupBeanEditor(bean, (updatedBean) -> {
+            if (currentRenderMode != updatedBean.getRenderMode()) {
+                switchRenderMode(updatedBean.getRenderMode());
+            }
+        });
+        switchRenderMode(bean.getRenderMode());
         setupBeanEditor(ssfrBean, (bean) -> {
             if (bean.getGaussianSmoothing() == 1) {
                 ssfrProcessor.setSsfrSmoothing(gaussianSmoothing);
@@ -207,16 +223,37 @@ public class Simulation3D extends SimpleApplication {
             volumeProcessor.setupGridTexture();
         });
         setupCameraAndLight();
-
-//        viewPort.addProcessor(new PlainParticleProcessor(
-//            fluidSimulation.getGeometry(),
-//            new Material(assetManager, "materials/particles/Particles.j3md")
-//        ));
-        viewPort.addProcessor(ssfrProcessor);
-//        viewPort.addProcessor(volumeProcessor);
 //        stateManager.attach(new VideoFrameRecorder("render_output", 30, 300));
 
         setupBoundaryFrame();
+    }
+
+    private void switchRenderMode(int mode) {
+        // Usuwamy wszystkie procesory graficzne, żeby uniknąć nakładania się efektów
+        if (particleProcessor != null) viewPort.removeProcessor(particleProcessor);
+        if (ssfrProcessor != null) viewPort.removeProcessor(ssfrProcessor);
+        if (volumeProcessor != null) viewPort.removeProcessor(volumeProcessor);
+
+        // Dodajemy ten wybrany w UI
+        switch (mode) {
+            case 0:
+                System.out.println("Switching to: Plain Particles");
+                if (particleProcessor != null) viewPort.addProcessor(particleProcessor);
+                break;
+            case 1:
+                System.out.println("Switching to: Screen Space Fluid Rendering (SSFR)");
+                if (ssfrProcessor != null) viewPort.addProcessor(ssfrProcessor);
+                break;
+            case 2:
+                System.out.println("Switching to: Perspective Volume Rendering");
+                if (volumeProcessor != null) viewPort.addProcessor(volumeProcessor);
+                break;
+            default:
+                System.err.println("Nieznany tryb renderowania!");
+                break;
+        }
+
+        currentRenderMode = mode;
     }
 
     @Override

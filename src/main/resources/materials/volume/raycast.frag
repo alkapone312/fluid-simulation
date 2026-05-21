@@ -49,6 +49,10 @@ void main() {
     bool wasInsideVolume = false;
     vec2 backgroundUV = v_TexCoord;
 
+    float surfaceFresnel = 0.0;
+    vec3 surfaceSpecular = vec3(0.0);
+    bool hitSurface = false;
+
     for (int z = 0; z < m_NumSlices; z++) {
         float zNear = sz(float(z));
         float zFar = sz(float(z) + 1.0);
@@ -72,18 +76,16 @@ void main() {
             vec3 sampleColor = waterBaseColor * diff;
 
             if (!wasInsideVolume) {
+                hitSurface = true;
                 vec3 incident = normalize(vec3(v_TexCoord * 2.0 - 1.0, -1.0));
-
-                vec3 refrDir = refract(incident, normal, etaRatio);
-                float distortionStrength = 0.1;
-                backgroundUV = v_TexCoord + (refrDir.xy * distortionStrength);
-
                 vec3 viewDir = -incident;
                 vec3 halfDir = normalize(m_LightDir + viewDir);
-                float spec = pow(max(dot(normal, halfDir), 0.0), 16.0);
 
-                color += (1.0 - alpha) * spec;
-                alpha += (1.0 - alpha) * spec * 0.5;
+                backgroundUV = v_TexCoord + (normal.xy * 0.1);
+                float spec = pow(max(dot(normal, halfDir), 0.0), 128.0);
+                surfaceSpecular = vec3(spec);
+                float R0 = 0.02;
+                surfaceFresnel = R0 + (1.0 - R0) * pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
             }
 
             color += (1.0 - alpha) * sampleColor * sampleAlpha;
@@ -97,6 +99,20 @@ void main() {
 
     vec3 backgroundColor = texture(m_SceneTexture, backgroundUV).rgb;
     vec3 finalColor = color + backgroundColor * (1.0 - alpha);
+
+    if (hitSurface) {
+        // Zastosowanie barwy głębokiej wody z SSFR
+        // (zmienna 'alpha' działa tu podobnie jak '1.0 - visibility' w SSFR)
+        vec3 deepWaterTint = vec3(0.0, 0.0, 0.2);
+        finalColor = mix(finalColor, deepWaterTint, 0.2 * alpha);
+
+        // Mieszanie koloru odbicia (nieba/światła) przy użyciu Fresnela z SSFR
+        vec3 reflectionColor = vec3(0.9, 0.9, 1.0);
+        finalColor = mix(finalColor, reflectionColor, surfaceFresnel);
+
+        // Ostatni krok: Dodanie silnego odblasku punktowego (Specular)
+        finalColor += surfaceSpecular;
+    }
 
     fragColor = vec4(finalColor, 1.0);
 }
