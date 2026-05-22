@@ -7,6 +7,7 @@ uniform vec3 m_LightDir;
 uniform mat4x4 m_ProjectionMatrixInverse;
 uniform sampler2D m_SceneTexture;
 uniform mat4x4 m_ViewMatrixInverse;
+uniform bool m_DebugNormal;
 
 uniform float m_FluidDensity;
 
@@ -71,6 +72,11 @@ void main() {
             float dY = texture(m_GridTexture, currPos + vec3(0, step.y, 0)).r - texture(m_GridTexture, currPos - vec3(0, step.y, 0)).r;
             float dZ = texture(m_GridTexture, currPos + vec3(0, 0, step.z)).r - texture(m_GridTexture, currPos - vec3(0, 0, step.z)).r;
             vec3 normal = normalize(vec3(-dX, -dY, dZ) + vec3(0.00001));
+
+            if (m_DebugNormal) {
+                fragColor = vec4(normal, 1.0);
+                return;
+            }
 
             float diff = max(dot(normal, m_LightDir), 0.2);
             vec3 sampleColor = waterBaseColor * diff;

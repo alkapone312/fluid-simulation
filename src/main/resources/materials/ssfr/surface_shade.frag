@@ -10,6 +10,7 @@ uniform mat4 m_ProjectionMatrixInverse;
 uniform vec3 m_LightDir;
 uniform bool m_DebugDepth;
 uniform bool m_DebugThickness;
+uniform bool m_DebugNormal;
 
 vec3 reconstructPos(vec2 uv, float z) {
     vec4 clipPos = vec4(uv * 2.0 - 1.0, 0.5 /* dummy */, 1.0);
@@ -63,6 +64,11 @@ void main() {
     vec3 pos_dy = reconstructPos(v_TexCoord + vec2(0, m_TexelSize.y), z + dz_dy);
 
     vec3 normal = normalize(cross(pos_dx - pos, pos_dy - pos));
+
+    if (m_DebugNormal) {
+        fragColor = vec4(normal, 1.0);
+        return;
+    }
 
     vec3 absorption = vec3(0.5, 0.5, 0.5);
     vec3 transmission = exp(-thickness * absorption);

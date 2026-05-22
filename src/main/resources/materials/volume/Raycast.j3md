@@ -9,6 +9,7 @@ MaterialDef Raycast {
         Float FarPlane
         Int NumSlices
         Vector3 LightDir
+        Boolean DebugNormal
 
         Int SlabStartZ
         Int SlabEndZ

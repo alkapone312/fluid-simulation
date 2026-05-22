@@ -9,6 +9,7 @@ MaterialDef Fluid Shade {
         Vector3 LightDir
         Boolean DebugDepth
         Boolean DebugThickness
+        Boolean DebugNormal
     }
     Technique Default {
         VertexShader GLSL430: materials/PostPass.vert

@@ -139,6 +139,7 @@ public class SsfrProcessor implements SceneProcessor {
         rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
         shadeMat.setBoolean("DebugDepth", ssfrBean.getDebugDepth() == 1);
         shadeMat.setBoolean("DebugThickness", ssfrBean.getDebugThickness() == 1);
+        shadeMat.setBoolean("DebugNormal", ssfrBean.getDebugNormal() == 1);
         shadeMat.setTexture("SceneTex", sceneTex);
         shadeMat.setTexture("SceneDepthTex", sceneDepthTex);
         shadeMat.setTexture("SmoothedDepthTex", ssfrBean.getApplySmoothing() == 1 ? ssfrSmoothing.getOutputTexture() : depthTex);

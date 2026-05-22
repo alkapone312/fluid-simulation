@@ -63,11 +63,9 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         var w = vp.getCamera().getWidth();
         var h = vp.getCamera().getHeight();
 
-        // Zostawiam Twoje 100, chociaż dla pełnej precyzji można by uzyć vp.getCamera().getFrustumFar()
         farPlane = 100;
         nearPlane = vp.getCamera().getFrustumNear();
 
-        // Uruchamiamy generowanie tekstury DOPIERO po przypisaniu vp
         setupGridTexture();
 
         sceneTex = new Texture2D(w, h, Image.Format.RGBA32F);
@@ -84,36 +82,23 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     }
 
     public void setupGridTexture() {
-        // Z pobieramy z beana X oraz Y
         gridX = bean.getPerspectiveGridWidth();
         gridY = bean.getPerspectiveGridHeight();
 
-        // -----------------------------------------------------------------
-        // OBLICZANIE POPRAWNEJ LICZBY PLASTRÓW (Z) WG FRAEDRICH ET AL.
-        // -----------------------------------------------------------------
         float n = nearPlane;
         float f = farPlane;
 
-        // W JMonkeyEngine najszybciej i najdokładniej wyciągnąć tg(FOV/2) z frustuma:
         float top = vp.getCamera().getFrustumTop();
 
-        // Krok 1: Obliczenie sigmy (współczynnika rozszerzania się perspektywy).
-        // Równanie z artykułu: sigma = (2 * tan(fov_y / 2)) / res_y[cite: 119].
-        // W JME: 2 * tan(fov_y / 2) to po prostu (top - bottom) / n
         float twoTanFovY = 2.0f * (top / n);
         float sigma = twoTanFovY / (float) gridY;
 
-        // Krok 2: Wstępne wyliczenie liczby plastrów m[cite: 134].
         float m_initial = (float) Math.log(f / n) / sigma;
 
-        // Krok 3: Obliczenie lambdy (korekcja dla promieni biegnących na brzegach frustuma)[cite: 131].
         float termX = (gridX * sigma) / 2.0f;
         float termY = (gridY * sigma) / 2.0f;
         float lambda = (float) Math.sqrt(termX * termX + termY * termY + 1.0f);
-
-        // Krok 4: Ostateczna liczba plastrów (m musi być przemnożone przez lambdę)[cite: 137].
         gridZ = Math.round(m_initial * lambda);
-        // -----------------------------------------------------------------
 
         System.out.println(gridX + " " + gridY + " " + gridZ);
 
@@ -141,13 +126,17 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     }
 
     @Override
-    public boolean isInitialized() { return rm != null; }
+    public boolean isInitialized() { return rm != null && this.vp != null; }
 
     @Override
     public void preFrame(float tpf) {}
 
     @Override
     public void postFrame(FrameBuffer out) {
+        if (!isInitialized()) {
+            return;
+        }
+
         int screenW = vp.getCamera().getWidth();
         int screenH = vp.getCamera().getHeight();
 
@@ -193,6 +182,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         raycastMat.setMatrix4("ProjectionMatrixInverse", projInv);
         raycastMat.setMatrix4("ViewMatrixInverse", viewInv);
         raycastMat.setFloat("FluidDensity", bean.getFluidDensity());
+        raycastMat.setBoolean("DebugNormal", bean.getDebugNormal() == 1);
 
         fsQuad.setMaterial(raycastMat);
         rm.renderGeometry(fsQuad);

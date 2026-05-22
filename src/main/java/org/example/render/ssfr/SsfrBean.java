@@ -14,6 +14,8 @@ public class SsfrBean {
 
     private int debugThickness = 0;
 
+    private int debugNormal = 0;
+
     private int gaussianSmoothing = 1;
 
     private int curvatureFlowSmoothing = 0;
@@ -61,6 +63,15 @@ public class SsfrBean {
 
     public void setDebugThickness(int debugThickness) {
         this.debugThickness = debugThickness;
+    }
+
+    @Control(type = ControlType.RANGE, min = 0, max = 1, step = 1)
+    public int getDebugNormal() {
+        return debugNormal;
+    }
+
+    public void setDebugNormal(int debugNormal) {
+        this.debugNormal = debugNormal;
     }
 
     @Control(type = ControlType.RANGE, min = 0, max = 1, step = 1)
