@@ -229,12 +229,10 @@ public class Simulation3D extends SimpleApplication {
     }
 
     private void switchRenderMode(int mode) {
-        // Usuwamy wszystkie procesory graficzne, żeby uniknąć nakładania się efektów
         if (particleProcessor != null) viewPort.removeProcessor(particleProcessor);
         if (ssfrProcessor != null) viewPort.removeProcessor(ssfrProcessor);
         if (volumeProcessor != null) viewPort.removeProcessor(volumeProcessor);
 
-        // Dodajemy ten wybrany w UI
         switch (mode) {
             case 0:
                 System.out.println("Switching to: Plain Particles");

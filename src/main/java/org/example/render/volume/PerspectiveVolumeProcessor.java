@@ -120,10 +120,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
     public void postQueue(RenderQueue rq) {}
 
     @Override
-    public void reshape(ViewPort viewPort, int w, int h) {
-        // Jeśli okno zmienia rozmiar, frustum też ulega zmianie,
-        // więc teoretycznie należałoby tutaj przebudować siatkę (setupGridTexture).
-    }
+    public void reshape(ViewPort viewPort, int w, int h) {}
 
     @Override
     public boolean isInitialized() { return rm != null && this.vp != null; }
