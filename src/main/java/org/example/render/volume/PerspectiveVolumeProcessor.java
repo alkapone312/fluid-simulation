@@ -13,8 +13,11 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.*;
+import org.example.benchmark.GpuProfilable;
+import org.example.benchmark.GpuProfiler;
+import org.example.benchmark.RenderPassListener;
 
-public class PerspectiveVolumeProcessor implements SceneProcessor {
+public class PerspectiveVolumeProcessor implements SceneProcessor, GpuProfilable {
     private RenderManager rm;
     private ViewPort vp;
     private Geometry particleGeometry;
@@ -138,13 +141,10 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         int screenH = vp.getCamera().getHeight();
 
         rm.getRenderer().copyFrameBuffer(out, sceneFbo, true, true);
-
-        raycastMat.setTexture("DepthTexture", sceneDepthTex);
-        raycastMat.setTexture("SceneTexture", sceneTex);
-
         rm.getRenderer().setViewPort(0, 0, gridX, gridY);
         rm.getRenderer().clearBuffers(true, false, false);
 
+        profiler.start("Resample");
         resampleMat.setFloat("NearPlane", nearPlane);
         resampleMat.setFloat("FarPlane", farPlane);
         resampleMat.setInt("NumSlices", gridZ);
@@ -159,6 +159,8 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
             rm.setForcedMaterial(resampleMat);
             rm.renderGeometry(particleGeometry);
         }
+        profiler.stop("Resample");
+
         rm.setForcedMaterial(null);
 
         rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
@@ -171,6 +173,9 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
         Matrix4f viewInv = vp.getCamera().getViewMatrix().clone();
         viewInv.invertLocal();
 
+        profiler.start("Raycast");
+        raycastMat.setTexture("DepthTexture", sceneDepthTex);
+        raycastMat.setTexture("SceneTexture", sceneTex);
         raycastMat.setTexture("GridTexture", gridTexture);
         raycastMat.setFloat("NearPlane", nearPlane);
         raycastMat.setFloat("FarPlane", farPlane);
@@ -183,6 +188,7 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
 
         fsQuad.setMaterial(raycastMat);
         rm.renderGeometry(fsQuad);
+        profiler.stop("Raycast");
     }
 
     @Override
@@ -190,4 +196,15 @@ public class PerspectiveVolumeProcessor implements SceneProcessor {
 
     @Override
     public void setProfiler(AppProfiler profiler) {}
+
+    public ViewPort getViewport() {
+        return this.vp;
+    }
+
+    private GpuProfiler profiler = new GpuProfiler();
+
+    @Override
+    public void setRenderPassListener(RenderPassListener listener) {
+        this.profiler.setListener(listener);
+    }
 }

@@ -1,0 +1,21 @@
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
+Gaussian Blur - Smoothness - 0.25,Depth,1.0275
+Gaussian Blur - Smoothness - 0.25,Thickness,1.0627
+Gaussian Blur - Smoothness - 0.25,Smooth,14.9702
+Gaussian Blur - Smoothness - 0.25,Final Shade,0.7541
+Gaussian Blur - Smoothness - 0.5,Depth,1.0320
+Gaussian Blur - Smoothness - 0.5,Thickness,1.0576
+Gaussian Blur - Smoothness - 0.5,Smooth,14.8674
+Gaussian Blur - Smoothness - 0.5,Final Shade,0.7519
+Gaussian Blur - Smoothness - 1.0,Depth,1.0257
+Gaussian Blur - Smoothness - 1.0,Thickness,1.0548
+Gaussian Blur - Smoothness - 1.0,Smooth,14.8562
+Gaussian Blur - Smoothness - 1.0,Final Shade,0.7260
+Gaussian Blur - Smoothness - 2.0,Depth,1.0273
+Gaussian Blur - Smoothness - 2.0,Thickness,1.0594
+Gaussian Blur - Smoothness - 2.0,Smooth,14.8550
+Gaussian Blur - Smoothness - 2.0,Final Shade,0.7521
+Gaussian Blur - Smoothness - 4.0,Depth,1.0219
+Gaussian Blur - Smoothness - 4.0,Thickness,1.0539
+Gaussian Blur - Smoothness - 4.0,Smooth,14.8481
+Gaussian Blur - Smoothness - 4.0,Final Shade,0.7733

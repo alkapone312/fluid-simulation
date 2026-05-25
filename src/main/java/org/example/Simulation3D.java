@@ -7,7 +7,6 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
-import com.jme3.post.SceneProcessor;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.debug.WireBox;
@@ -21,7 +20,7 @@ import com.jme3.util.SkyFactory;
 import com.simsilica.lemur.GuiGlobals;
 import com.simsilica.lemur.Panel;
 import org.example.bean.BeanEditor;
-import org.example.VideoFrameRecorder;
+import org.example.benchmark.BenchmarkState;
 import org.example.render.PlainParticleProcessor;
 import org.example.render.ssfr.*;
 import org.example.render.volume.PerspectiveVolumeBean;
@@ -35,7 +34,7 @@ import java.util.function.Consumer;
 public class Simulation3D extends SimpleApplication {
 
     private FluidSimulation fluidSimulation;
-    private SimulationBean bean = new SimulationBean();
+    public SimulationBean bean = new SimulationBean();
 
     private int currentRenderMode = -1;
 
@@ -44,6 +43,7 @@ public class Simulation3D extends SimpleApplication {
         AppSettings settings = new AppSettings(true);
         settings.setResolution(1024, 1024);
         settings.setFullscreen(false);
+        settings.setVSync(false);
         app.setSettings(settings);
         app.start();
     }
@@ -178,13 +178,22 @@ public class Simulation3D extends SimpleApplication {
     private SsfrProcessor ssfrProcessor;
     private PlainParticleProcessor particleProcessor;
 
+    public SsfrBean ssfrBean = new SsfrBean();
+    public GaussianSmoothingBean gaussianSmoothingBean = new GaussianSmoothingBean();
+    public CurvatureFlowSmoothingBean curvatureFlowSmoothingBean = new CurvatureFlowSmoothingBean();
+    public PerspectiveVolumeBean volumeBean = new PerspectiveVolumeBean();
+    private GaussianSmoothing gaussianSmoothing;
+    private CurvatureFlowSmoothing curvatureFlowSmoothing;
+
+    private int lastRenderMode = -1;
+    private int lastGaussianSmoothing = -1;
+    private int lastCurvatureFlowSmoothing = -1;
+    private int lastGridWidth = -1;
+    private int lastGridHeight = -1;
     @Override
     public void simpleInitApp() {
-        var ssfrBean = new SsfrBean();
-        var gaussianSmoothingBean = new GaussianSmoothingBean();
-        var curvatureFlowSmoothingBean = new CurvatureFlowSmoothingBean();
-        var curvatureFlowSmoothing = new CurvatureFlowSmoothing(assetManager, curvatureFlowSmoothingBean);
-        var gaussianSmoothing = new GaussianSmoothing(assetManager, gaussianSmoothingBean);
+        curvatureFlowSmoothing = new CurvatureFlowSmoothing(assetManager, curvatureFlowSmoothingBean);
+        gaussianSmoothing = new GaussianSmoothing(assetManager, gaussianSmoothingBean);
         fluidSimulation = new FluidSimulation(24*24*24, assetManager, bean);
         ssfrProcessor = new SsfrProcessor(
             assetManager,
@@ -192,7 +201,6 @@ public class Simulation3D extends SimpleApplication {
             ssfrBean,
             ssfrBean.getGaussianSmoothing() == 1 ? gaussianSmoothing : curvatureFlowSmoothing
         );
-        var volumeBean = new PerspectiveVolumeBean();
         volumeProcessor = new PerspectiveVolumeProcessor(
             assetManager,
             fluidSimulation.getGeometry(),
@@ -202,30 +210,57 @@ public class Simulation3D extends SimpleApplication {
             fluidSimulation.getGeometry(),
             new Material(assetManager, "materials/particles/Particles.j3md")
         );
-        setupBeanEditor(bean, (updatedBean) -> {
-            if (currentRenderMode != updatedBean.getRenderMode()) {
-                switchRenderMode(updatedBean.getRenderMode());
-            }
-        });
-        switchRenderMode(bean.getRenderMode());
-        setupBeanEditor(ssfrBean, (bean) -> {
-            if (bean.getGaussianSmoothing() == 1) {
-                ssfrProcessor.setSsfrSmoothing(gaussianSmoothing);
-            }
 
-            if (bean.getCurvatureFlowSmoothing() == 1) {
-                ssfrProcessor.setSsfrSmoothing(curvatureFlowSmoothing);
-            }
-        });
+        this.viewPort.addProcessor(particleProcessor);
+        this.viewPort.addProcessor(ssfrProcessor);
+        this.viewPort.addProcessor(volumeProcessor);
+
+        setupBeanEditor(bean);
+        switchRenderMode(bean.getRenderMode());
+        setupBeanEditor(ssfrBean);
         setupBeanEditor(gaussianSmoothingBean);
         setupBeanEditor(curvatureFlowSmoothingBean);
-        setupBeanEditor(volumeBean, (bean) -> {
-            volumeProcessor.setupGridTexture();
-        });
+        setupBeanEditor(volumeBean);
         setupCameraAndLight();
-//        stateManager.attach(new VideoFrameRecorder("render_output", 30, 300));
+
+        switchRenderMode(bean.getRenderMode());
+        lastRenderMode = bean.getRenderMode();
+        lastGaussianSmoothing = ssfrBean.getGaussianSmoothing();
+        lastCurvatureFlowSmoothing = ssfrBean.getCurvatureFlowSmoothing();
+        lastGridWidth = volumeBean.getPerspectiveGridWidth();
+        lastGridHeight = volumeBean.getPerspectiveGridHeight();
 
         setupBoundaryFrame();
+    }
+
+    private void pollBeanChanges() {
+        if (lastRenderMode != bean.getRenderMode()) {
+            switchRenderMode(bean.getRenderMode());
+            lastRenderMode = bean.getRenderMode();
+        }
+
+        if (lastGaussianSmoothing != ssfrBean.getGaussianSmoothing() ||
+            lastCurvatureFlowSmoothing != ssfrBean.getCurvatureFlowSmoothing()) {
+
+            if (ssfrBean.getGaussianSmoothing() == 1) {
+                ssfrProcessor.setSsfrSmoothing(gaussianSmoothing);
+            } else if (ssfrBean.getCurvatureFlowSmoothing() == 1) {
+                ssfrProcessor.setSsfrSmoothing(curvatureFlowSmoothing);
+            }
+
+            lastGaussianSmoothing = ssfrBean.getGaussianSmoothing();
+            lastCurvatureFlowSmoothing = ssfrBean.getCurvatureFlowSmoothing();
+        }
+
+        if (lastGridWidth != volumeBean.getPerspectiveGridWidth() ||
+            lastGridHeight != volumeBean.getPerspectiveGridHeight()) {
+
+            if (volumeProcessor != null && volumeProcessor.getViewport() != null) {
+                volumeProcessor.setupGridTexture();
+                lastGridWidth = volumeBean.getPerspectiveGridWidth();
+                lastGridHeight = volumeBean.getPerspectiveGridHeight();
+            }
+        }
     }
 
     private void switchRenderMode(int mode) {
@@ -257,6 +292,7 @@ public class Simulation3D extends SimpleApplication {
     @Override
     public void simpleUpdate(float tpf) {
         updateGui();
+        pollBeanChanges();
         fluidSimulation.update(tpf);
         updateBoundaryFrame();
     }

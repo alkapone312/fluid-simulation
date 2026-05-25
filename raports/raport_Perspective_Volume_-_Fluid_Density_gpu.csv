@@ -1,0 +1,6 @@
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
+Perspective Volume - 0.0,Raycast,201.7772
+Perspective Volume - 0.25,Raycast,201.7172
+Perspective Volume - 0.5,Raycast,201.6985
+Perspective Volume - 1.0,Raycast,201.6199
+Perspective Volume - 2.0,Raycast,201.5804

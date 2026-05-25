@@ -1,0 +1,21 @@
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
+Gaussian Blur - Size - 10,Depth,1.1206
+Gaussian Blur - Size - 10,Thickness,1.1636
+Gaussian Blur - Size - 10,Smooth,5.9537
+Gaussian Blur - Size - 10,Final Shade,0.7835
+Gaussian Blur - Size - 30,Depth,1.0226
+Gaussian Blur - Size - 30,Thickness,1.0566
+Gaussian Blur - Size - 30,Smooth,14.8565
+Gaussian Blur - Size - 30,Final Shade,0.7246
+Gaussian Blur - Size - 50,Depth,1.0234
+Gaussian Blur - Size - 50,Thickness,1.0573
+Gaussian Blur - Size - 50,Smooth,24.1972
+Gaussian Blur - Size - 50,Final Shade,0.7443
+Gaussian Blur - Size - 70,Depth,1.0256
+Gaussian Blur - Size - 70,Thickness,1.0566
+Gaussian Blur - Size - 70,Smooth,33.5118
+Gaussian Blur - Size - 70,Final Shade,0.7417
+Gaussian Blur - Size - 90,Depth,1.0177
+Gaussian Blur - Size - 90,Thickness,1.0583
+Gaussian Blur - Size - 90,Smooth,42.8238
+Gaussian Blur - Size - 90,Final Shade,0.7346

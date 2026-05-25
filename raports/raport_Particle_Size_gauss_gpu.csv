@@ -1,0 +1,21 @@
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
+Particle Size - 0.09 - Gauss,Depth,0.3930
+Particle Size - 0.09 - Gauss,Thickness,0.3517
+Particle Size - 0.09 - Gauss,Smooth,14.8659
+Particle Size - 0.09 - Gauss,Final Shade,0.7263
+Particle Size - 0.18 - Gauss,Depth,1.0324
+Particle Size - 0.18 - Gauss,Thickness,1.0556
+Particle Size - 0.18 - Gauss,Smooth,14.8751
+Particle Size - 0.18 - Gauss,Final Shade,0.7253
+Particle Size - 0.36 - Gauss,Depth,3.3067
+Particle Size - 0.36 - Gauss,Thickness,3.8858
+Particle Size - 0.36 - Gauss,Smooth,14.8692
+Particle Size - 0.36 - Gauss,Final Shade,0.7578
+Particle Size - 0.72 - Gauss,Depth,13.6203
+Particle Size - 0.72 - Gauss,Thickness,15.0989
+Particle Size - 0.72 - Gauss,Smooth,14.8505
+Particle Size - 0.72 - Gauss,Final Shade,0.7929
+Particle Size - 1.44 - Gauss,Depth,58.3640
+Particle Size - 1.44 - Gauss,Thickness,60.1853
+Particle Size - 1.44 - Gauss,Smooth,14.8517
+Particle Size - 1.44 - Gauss,Final Shade,0.8620

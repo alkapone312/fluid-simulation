@@ -1,0 +1,21 @@
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
+Particle Size - 0.09 - Curvature flow,Depth,0.3855
+Particle Size - 0.09 - Curvature flow,Thickness,0.3488
+Particle Size - 0.09 - Curvature flow,Smooth,175.7452
+Particle Size - 0.09 - Curvature flow,Final Shade,0.7203
+Particle Size - 0.18 - Curvature flow,Depth,1.0266
+Particle Size - 0.18 - Curvature flow,Thickness,1.0570
+Particle Size - 0.18 - Curvature flow,Smooth,175.8278
+Particle Size - 0.18 - Curvature flow,Final Shade,0.7426
+Particle Size - 0.36 - Curvature flow,Depth,3.3060
+Particle Size - 0.36 - Curvature flow,Thickness,3.8793
+Particle Size - 0.36 - Curvature flow,Smooth,176.0404
+Particle Size - 0.36 - Curvature flow,Final Shade,0.7510
+Particle Size - 0.72 - Curvature flow,Depth,13.6289
+Particle Size - 0.72 - Curvature flow,Thickness,15.1074
+Particle Size - 0.72 - Curvature flow,Smooth,176.0312
+Particle Size - 0.72 - Curvature flow,Final Shade,0.7934
+Particle Size - 1.44 - Curvature flow,Depth,58.3569
+Particle Size - 1.44 - Curvature flow,Thickness,60.1735
+Particle Size - 1.44 - Curvature flow,Smooth,175.6433
+Particle Size - 1.44 - Curvature flow,Final Shade,0.8671

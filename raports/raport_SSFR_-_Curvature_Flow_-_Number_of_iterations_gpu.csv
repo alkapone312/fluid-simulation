@@ -1,0 +1,21 @@
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
+Curvature Flow - 25,Depth,1.0292
+Curvature Flow - 25,Thickness,1.0593
+Curvature Flow - 25,Smooth,11.1411
+Curvature Flow - 25,Final Shade,0.7870
+Curvature Flow - 50,Depth,1.0294
+Curvature Flow - 50,Thickness,1.0582
+Curvature Flow - 50,Smooth,22.0377
+Curvature Flow - 50,Final Shade,0.7644
+Curvature Flow - 100,Depth,1.0239
+Curvature Flow - 100,Thickness,1.0560
+Curvature Flow - 100,Smooth,43.9598
+Curvature Flow - 100,Final Shade,0.7234
+Curvature Flow - 200,Depth,1.0200
+Curvature Flow - 200,Thickness,1.0593
+Curvature Flow - 200,Smooth,87.7657
+Curvature Flow - 200,Final Shade,0.7279
+Curvature Flow - 400,Depth,1.0176
+Curvature Flow - 400,Thickness,1.0560
+Curvature Flow - 400,Smooth,175.4288
+Curvature Flow - 400,Final Shade,0.7337

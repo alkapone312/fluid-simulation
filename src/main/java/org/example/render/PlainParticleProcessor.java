@@ -9,8 +9,11 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.FrameBuffer;
+import org.example.benchmark.GpuProfilable;
+import org.example.benchmark.GpuProfiler;
+import org.example.benchmark.RenderPassListener;
 
-public class PlainParticleProcessor implements SceneProcessor {
+public class PlainParticleProcessor implements SceneProcessor, GpuProfilable {
     private RenderManager rm;
 
     private Geometry geometry;
@@ -41,7 +44,9 @@ public class PlainParticleProcessor implements SceneProcessor {
 
     @Override
     public void postQueue(RenderQueue renderQueue) {
+        profiler.start("Render");
         rm.renderGeometry(this.geometry);
+        profiler.stop("Render");
     }
 
     @Override
@@ -52,4 +57,11 @@ public class PlainParticleProcessor implements SceneProcessor {
 
     @Override
     public void setProfiler(AppProfiler appProfiler) {}
+
+    private GpuProfiler profiler = new GpuProfiler();
+
+    @Override
+    public void setRenderPassListener(RenderPassListener listener) {
+        profiler.setListener(listener);
+    }
 }

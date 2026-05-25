@@ -14,8 +14,11 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image;
 import com.jme3.texture.Texture2D;
+import org.example.benchmark.GpuProfilable;
+import org.example.benchmark.GpuProfiler;
+import org.example.benchmark.RenderPassListener;
 
-public class SsfrProcessor implements SceneProcessor {
+public class SsfrProcessor implements SceneProcessor, GpuProfilable {
     private RenderManager rm;
     private ViewPort vp;
 
@@ -42,6 +45,8 @@ public class SsfrProcessor implements SceneProcessor {
 
     private int w;
     private int h;
+
+    private GpuProfiler profiler = new GpuProfiler();
 
     public SsfrProcessor(
         AssetManager assetManager,
@@ -103,7 +108,6 @@ public class SsfrProcessor implements SceneProcessor {
 
     @Override
     public void preFrame(float v) {}
-
     @Override
     public void postFrame(FrameBuffer frameBuffer) {
         if (rm == null) {
@@ -113,6 +117,7 @@ public class SsfrProcessor implements SceneProcessor {
         rm.getRenderer().copyFrameBuffer(frameBuffer, sceneFbo, true, true);
 
         // 1. Render Depth
+        profiler.start("Depth");
         depthMat.setFloat("viewportHeight", h);
         depthMat.setFloat("particleRadius", ssfrBean.getParticleRadius());
         rm.getRenderer().setFrameBuffer(depthFbo);
@@ -120,8 +125,10 @@ public class SsfrProcessor implements SceneProcessor {
         rm.setForcedMaterial(depthMat);
         rm.renderGeometry(particleGeometry);
         rm.setForcedMaterial(null);
+        profiler.stop("Depth");
 
         // 2. Render thickness
+        profiler.start("Thickness");
         thicknessMat.setFloat("viewportHeight", h);
         thicknessMat.setFloat("particleRadius", ssfrBean.getParticleRadius());
         thicknessMat.setFloat("thicknessMultiplier", ssfrBean.getThicknessMultiplier());
@@ -130,12 +137,16 @@ public class SsfrProcessor implements SceneProcessor {
         rm.setForcedMaterial(thicknessMat);
         rm.renderGeometry(particleGeometry);
         rm.setForcedMaterial(null);
+        profiler.stop("Thickness");
 
         // 3. Smooth
+        profiler.start("Smooth");
         ssfrSmoothing.setDepthTexture(depthTex);
         ssfrSmoothing.smooth(rm, fsQuad);
+        profiler.stop("Smooth");
 
         // 4. Final Shade
+        profiler.start("Final Shade");
         rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
         shadeMat.setBoolean("DebugDepth", ssfrBean.getDebugDepth() == 1);
         shadeMat.setBoolean("DebugThickness", ssfrBean.getDebugThickness() == 1);
@@ -155,6 +166,7 @@ public class SsfrProcessor implements SceneProcessor {
 
         fsQuad.setMaterial(shadeMat);
         rm.renderGeometry(fsQuad);
+        profiler.stop("Final Shade");
     }
 
     @Override
@@ -162,4 +174,9 @@ public class SsfrProcessor implements SceneProcessor {
 
     @Override
     public void setProfiler(AppProfiler appProfiler) {}
+
+    @Override
+    public void setRenderPassListener(RenderPassListener listener) {
+        this.profiler.setListener(listener);
+    }
 }
