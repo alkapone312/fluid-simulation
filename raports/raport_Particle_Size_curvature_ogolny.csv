@@ -1,6 +1,6 @@
-Scenariusz,Sredni Czas Klatki (ms),Srednie FPS
-Particle Size - 0.09 - Curvature flow,194.5883,5.14
-Particle Size - 0.18 - Curvature flow,196.1958,5.10
-Particle Size - 0.36 - Curvature flow,201.4067,4.97
-Particle Size - 0.72 - Curvature flow,222.4573,4.50
-Particle Size - 1.44 - Curvature flow,312.5433,3.20
+Scenariusz,Sredni Czas Klatki (ms),Srednie FPS,Odchylenie Std (ms),Min (ms),Max (ms),1% Low (ms),0.1% Low (ms)
+0.09 - Curvature flow,196.0414,5.10,1.6323,193.4373,203.9280,201.5177,203.9280
+0.18 - Curvature flow,198.8297,5.03,3.2988,195.2057,214.9940,212.9886,214.9940
+0.36 - Curvature flow,205.5732,4.86,2.6699,202.4712,226.2110,216.0571,226.2110
+0.72 - Curvature flow,240.2292,4.16,15.3094,231.7676,327.5181,311.3836,327.5181
+1.44 - Curvature flow,352.5769,2.84,3.8424,347.3249,379.9538,368.4149,379.9538

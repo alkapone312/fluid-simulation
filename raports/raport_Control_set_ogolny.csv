@@ -1,2 +1,2 @@
-Scenariusz,Sredni Czas Klatki (ms),Srednie FPS
-Control sceario,12.1341,82.41
+Scenariusz,Sredni Czas Klatki (ms),Srednie FPS,Odchylenie Std (ms),Min (ms),Max (ms),1% Low (ms),0.1% Low (ms)
+Control sceario,11.8144,84.64,0.3472,10.7053,13.5084,12.7356,13.5084

@@ -1,21 +1,21 @@
-Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
-Gaussian Blur - Smoothness - 0.25,Depth,1.0275
-Gaussian Blur - Smoothness - 0.25,Thickness,1.0627
-Gaussian Blur - Smoothness - 0.25,Smooth,14.9702
-Gaussian Blur - Smoothness - 0.25,Final Shade,0.7541
-Gaussian Blur - Smoothness - 0.5,Depth,1.0320
-Gaussian Blur - Smoothness - 0.5,Thickness,1.0576
-Gaussian Blur - Smoothness - 0.5,Smooth,14.8674
-Gaussian Blur - Smoothness - 0.5,Final Shade,0.7519
-Gaussian Blur - Smoothness - 1.0,Depth,1.0257
-Gaussian Blur - Smoothness - 1.0,Thickness,1.0548
-Gaussian Blur - Smoothness - 1.0,Smooth,14.8562
-Gaussian Blur - Smoothness - 1.0,Final Shade,0.7260
-Gaussian Blur - Smoothness - 2.0,Depth,1.0273
-Gaussian Blur - Smoothness - 2.0,Thickness,1.0594
-Gaussian Blur - Smoothness - 2.0,Smooth,14.8550
-Gaussian Blur - Smoothness - 2.0,Final Shade,0.7521
-Gaussian Blur - Smoothness - 4.0,Depth,1.0219
-Gaussian Blur - Smoothness - 4.0,Thickness,1.0539
-Gaussian Blur - Smoothness - 4.0,Smooth,14.8481
-Gaussian Blur - Smoothness - 4.0,Final Shade,0.7733
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas (ms),Odchylenie Std (ms),Min (ms),Max (ms)
+Gaussian Blur - Smoothness - 0.25,Depth,1.7816,0.2010,1.6986,2.8468
+Gaussian Blur - Smoothness - 0.25,Thickness,1.0597,0.0458,1.0531,1.8299
+Gaussian Blur - Smoothness - 0.25,Smooth,15.0225,0.3535,14.8372,18.6474
+Gaussian Blur - Smoothness - 0.25,Final Shade,0.8091,0.0651,0.7253,1.0613
+Gaussian Blur - Smoothness - 0.5,Depth,1.7603,0.1534,1.6985,2.5658
+Gaussian Blur - Smoothness - 0.5,Thickness,1.0588,0.0394,1.0531,1.6035
+Gaussian Blur - Smoothness - 0.5,Smooth,14.9350,0.1578,14.8266,16.8405
+Gaussian Blur - Smoothness - 0.5,Final Shade,0.7688,0.0306,0.7182,0.9469
+Gaussian Blur - Smoothness - 1.0,Depth,1.7853,0.1758,1.6986,2.2939
+Gaussian Blur - Smoothness - 1.0,Thickness,1.0580,0.0311,1.0530,1.5778
+Gaussian Blur - Smoothness - 1.0,Smooth,14.9811,0.1909,14.8365,16.8389
+Gaussian Blur - Smoothness - 1.0,Final Shade,0.7817,0.0376,0.7134,0.9818
+Gaussian Blur - Smoothness - 2.0,Depth,1.7501,0.1365,1.6984,2.2604
+Gaussian Blur - Smoothness - 2.0,Thickness,1.0593,0.0472,1.0529,1.6863
+Gaussian Blur - Smoothness - 2.0,Smooth,14.9570,0.1537,14.8350,16.3002
+Gaussian Blur - Smoothness - 2.0,Final Shade,0.7603,0.0291,0.6960,0.9760
+Gaussian Blur - Smoothness - 4.0,Depth,1.7601,0.1505,1.6984,2.4243
+Gaussian Blur - Smoothness - 4.0,Thickness,1.0581,0.0273,1.0528,1.5160
+Gaussian Blur - Smoothness - 4.0,Smooth,14.9861,0.1585,14.8418,16.5249
+Gaussian Blur - Smoothness - 4.0,Final Shade,0.7992,0.0420,0.7270,1.0223

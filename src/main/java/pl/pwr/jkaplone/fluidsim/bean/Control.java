@@ -1,0 +1,19 @@
+package pl.pwr.jkaplone.fluidsim.bean;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Control {
+
+    ControlType type();
+
+    String label() default "";
+
+    double min() default 0.0;
+    double max() default 0.0;
+    double step() default 1.0;
+}

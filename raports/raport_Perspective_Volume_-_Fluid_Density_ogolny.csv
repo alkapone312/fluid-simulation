@@ -1,6 +1,6 @@
-Scenariusz,Sredni Czas Klatki (ms),Srednie FPS
-Perspective Volume - 0.0,371.7842,2.69
-Perspective Volume - 0.25,371.6438,2.69
-Perspective Volume - 0.5,371.6481,2.69
-Perspective Volume - 1.0,371.5680,2.69
-Perspective Volume - 2.0,371.8427,2.69
+Scenariusz,Sredni Czas Klatki (ms),Srednie FPS,Odchylenie Std (ms),Min (ms),Max (ms),1% Low (ms),0.1% Low (ms)
+Perspective Volume - 0.0,371.6034,2.69,2.3110,367.3161,389.2970,383.0285,389.2970
+Perspective Volume - 0.25,371.6113,2.69,1.9880,367.6612,388.0471,377.5988,388.0471
+Perspective Volume - 0.5,371.5896,2.69,1.8403,368.1563,385.5066,378.2061,385.5066
+Perspective Volume - 1.0,371.5532,2.69,2.0679,367.7605,386.8697,380.2087,386.8697
+Perspective Volume - 2.0,371.5602,2.69,1.9567,367.4877,388.6707,380.4572,388.6707

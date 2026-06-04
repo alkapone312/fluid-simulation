@@ -1,6 +1,11 @@
-Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
-Perspective Volume - 0.09,Raycast,201.1881
-Perspective Volume - 0.18,Raycast,201.5044
-Perspective Volume - 0.36,Raycast,201.7583
-Perspective Volume - 0.72,Raycast,202.4485
-Perspective Volume - 1.44,Raycast,204.3966
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas (ms),Odchylenie Std (ms),Min (ms),Max (ms)
+Perspective Volume - 0.09,Resample,150.0689,2.4914,149.1872,177.9453
+Perspective Volume - 0.09,Raycast,200.8263,1.1785,198.1896,206.1497
+Perspective Volume - 0.18,Resample,152.9833,1.5029,152.1968,166.8875
+Perspective Volume - 0.18,Raycast,201.1221,1.0901,197.9611,205.4902
+Perspective Volume - 0.36,Resample,156.6684,1.9919,155.6593,170.6984
+Perspective Volume - 0.36,Raycast,201.5452,1.1526,199.0018,206.6123
+Perspective Volume - 0.72,Resample,161.1721,1.4774,160.2918,176.0583
+Perspective Volume - 0.72,Raycast,202.1362,1.1419,199.6326,206.8875
+Perspective Volume - 1.44,Resample,180.2718,1.3253,179.4885,191.6156
+Perspective Volume - 1.44,Raycast,204.0613,1.0833,201.9932,208.0903

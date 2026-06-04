@@ -1,6 +1,6 @@
-Scenariusz,Sredni Czas Klatki (ms),Srednie FPS
-Curvature Flow - 0.0005,62.4647,16.01
-Curvature Flow - 0.001,62.5755,15.98
-Curvature Flow - 0.005,62.4539,16.01
-Curvature Flow - 0.01,62.5436,15.99
-Curvature Flow - 0.05,62.5010,16.00
+Scenariusz,Sredni Czas Klatki (ms),Srednie FPS,Odchylenie Std (ms),Min (ms),Max (ms),1% Low (ms),0.1% Low (ms)
+Curvature Flow - 0.0005,65.7035,15.22,3.5525,61.9399,83.0819,79.2800,83.0819
+Curvature Flow - 0.001,63.3156,15.79,1.0875,61.4817,68.9244,67.5222,68.9244
+Curvature Flow - 0.005,63.3908,15.78,1.5047,61.5848,74.5571,69.6971,74.5571
+Curvature Flow - 0.01,63.2026,15.82,1.5808,61.5800,77.4379,67.7170,77.4379
+Curvature Flow - 0.05,63.2638,15.81,1.1754,61.7444,74.1701,67.3091,74.1701

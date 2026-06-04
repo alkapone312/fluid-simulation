@@ -16,4 +16,7 @@ void main() {
     vec3 pixelViewPos = v_ViewPos + vec3(nCoord * v_SphereRadius, z * v_SphereRadius);
 
     fragDepth = pixelViewPos.z;
+    vec4 clipSpacePos = g_ProjectionMatrix * vec4(pixelViewPos, 1.0);
+    float ndcDepth = clipSpacePos.z / clipSpacePos.w;
+    gl_FragDepth = (ndcDepth * 0.5) + 0.5;
 }

@@ -1,21 +1,21 @@
-Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
-Curvature Flow - 25,Depth,1.0292
-Curvature Flow - 25,Thickness,1.0593
-Curvature Flow - 25,Smooth,11.1411
-Curvature Flow - 25,Final Shade,0.7870
-Curvature Flow - 50,Depth,1.0294
-Curvature Flow - 50,Thickness,1.0582
-Curvature Flow - 50,Smooth,22.0377
-Curvature Flow - 50,Final Shade,0.7644
-Curvature Flow - 100,Depth,1.0239
-Curvature Flow - 100,Thickness,1.0560
-Curvature Flow - 100,Smooth,43.9598
-Curvature Flow - 100,Final Shade,0.7234
-Curvature Flow - 200,Depth,1.0200
-Curvature Flow - 200,Thickness,1.0593
-Curvature Flow - 200,Smooth,87.7657
-Curvature Flow - 200,Final Shade,0.7279
-Curvature Flow - 400,Depth,1.0176
-Curvature Flow - 400,Thickness,1.0560
-Curvature Flow - 400,Smooth,175.4288
-Curvature Flow - 400,Final Shade,0.7337
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas (ms),Odchylenie Std (ms),Min (ms),Max (ms)
+Curvature Flow - 25,Depth,1.7620,0.1560,1.6988,2.4204
+Curvature Flow - 25,Thickness,1.0659,0.0855,1.0530,1.8757
+Curvature Flow - 25,Smooth,11.6735,0.5031,11.1601,14.6416
+Curvature Flow - 25,Final Shade,0.8106,0.0446,0.7401,1.0258
+Curvature Flow - 50,Depth,1.7646,0.1647,1.6987,2.8142
+Curvature Flow - 50,Thickness,1.0563,0.0084,1.0528,1.1600
+Curvature Flow - 50,Smooth,23.0846,0.8902,22.2223,27.1509
+Curvature Flow - 50,Final Shade,0.7989,0.0386,0.7341,0.9815
+Curvature Flow - 100,Depth,1.7433,0.1336,1.6983,2.3361
+Curvature Flow - 100,Thickness,1.0561,0.0217,1.0531,1.4298
+Curvature Flow - 100,Smooth,44.9887,1.2981,44.3541,58.6511
+Curvature Flow - 100,Final Shade,0.7629,0.0325,0.7172,0.9326
+Curvature Flow - 200,Depth,1.7423,0.1309,1.6984,2.2968
+Curvature Flow - 200,Thickness,1.0580,0.0376,1.0529,1.5677
+Curvature Flow - 200,Smooth,89.4132,1.8081,88.5543,105.2619
+Curvature Flow - 200,Final Shade,0.7492,0.0270,0.7110,0.9075
+Curvature Flow - 400,Depth,1.7525,0.1485,1.6986,2.2673
+Curvature Flow - 400,Thickness,1.0544,0.0015,1.0529,1.0711
+Curvature Flow - 400,Smooth,179.0087,2.4645,177.5494,200.7584
+Curvature Flow - 400,Final Shade,0.7599,0.0259,0.7192,0.9373

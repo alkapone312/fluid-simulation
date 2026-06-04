@@ -1,2 +1,2 @@
-Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
-Control sceario,Render,0.4047
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas (ms),Odchylenie Std (ms),Min (ms),Max (ms)
+Control sceario,Render,0.4146,0.0811,0.3935,0.8406

@@ -1,6 +1,6 @@
-Scenariusz,Sredni Czas Klatki (ms),Srednie FPS
-Gaussian Blur - Smoothness - 0.25,32.8094,30.48
-Gaussian Blur - Smoothness - 0.5,32.3899,30.87
-Gaussian Blur - Smoothness - 1.0,32.1985,31.06
-Gaussian Blur - Smoothness - 2.0,32.2097,31.05
-Gaussian Blur - Smoothness - 4.0,32.2051,31.05
+Scenariusz,Sredni Czas Klatki (ms),Srednie FPS,Odchylenie Std (ms),Min (ms),Max (ms),1% Low (ms),0.1% Low (ms)
+Gaussian Blur - Smoothness - 0.25,32.3433,30.92,1.8260,31.0735,53.0080,40.1411,53.0080
+Gaussian Blur - Smoothness - 0.5,32.2873,30.97,0.7563,31.1650,37.4439,34.2790,37.4439
+Gaussian Blur - Smoothness - 1.0,32.3320,30.93,1.3539,30.9572,42.9138,38.4041,42.9138
+Gaussian Blur - Smoothness - 2.0,32.1092,31.14,0.8232,31.0793,37.3922,33.8862,37.3922
+Gaussian Blur - Smoothness - 4.0,31.8865,31.36,0.9218,31.0762,38.9078,35.3525,38.9078

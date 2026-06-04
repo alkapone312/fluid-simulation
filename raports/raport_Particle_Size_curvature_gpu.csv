@@ -1,21 +1,21 @@
-Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
-Particle Size - 0.09 - Curvature flow,Depth,0.3855
-Particle Size - 0.09 - Curvature flow,Thickness,0.3488
-Particle Size - 0.09 - Curvature flow,Smooth,175.7452
-Particle Size - 0.09 - Curvature flow,Final Shade,0.7203
-Particle Size - 0.18 - Curvature flow,Depth,1.0266
-Particle Size - 0.18 - Curvature flow,Thickness,1.0570
-Particle Size - 0.18 - Curvature flow,Smooth,175.8278
-Particle Size - 0.18 - Curvature flow,Final Shade,0.7426
-Particle Size - 0.36 - Curvature flow,Depth,3.3060
-Particle Size - 0.36 - Curvature flow,Thickness,3.8793
-Particle Size - 0.36 - Curvature flow,Smooth,176.0404
-Particle Size - 0.36 - Curvature flow,Final Shade,0.7510
-Particle Size - 0.72 - Curvature flow,Depth,13.6289
-Particle Size - 0.72 - Curvature flow,Thickness,15.1074
-Particle Size - 0.72 - Curvature flow,Smooth,176.0312
-Particle Size - 0.72 - Curvature flow,Final Shade,0.7934
-Particle Size - 1.44 - Curvature flow,Depth,58.3569
-Particle Size - 1.44 - Curvature flow,Thickness,60.1735
-Particle Size - 1.44 - Curvature flow,Smooth,175.6433
-Particle Size - 1.44 - Curvature flow,Final Shade,0.8671
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas (ms),Odchylenie Std (ms),Min (ms),Max (ms)
+0.09 - Curvature flow,Depth,0.5146,0.0535,0.5068,1.0422
+0.09 - Curvature flow,Thickness,0.3458,0.0010,0.3437,0.3598
+0.09 - Curvature flow,Smooth,178.0422,1.6733,177.0470,187.4193
+0.09 - Curvature flow,Final Shade,0.7311,0.0271,0.6939,0.9445
+0.18 - Curvature flow,Depth,1.7663,0.1633,1.6977,2.2903
+0.18 - Curvature flow,Thickness,1.0547,0.0039,1.0522,1.0825
+0.18 - Curvature flow,Smooth,179.5008,3.4592,177.0526,195.1246
+0.18 - Curvature flow,Final Shade,0.7611,0.0335,0.7173,0.9390
+0.36 - Curvature flow,Depth,6.3626,0.1616,6.2946,6.8532
+0.36 - Curvature flow,Thickness,3.8818,0.0423,3.8747,4.3900
+0.36 - Curvature flow,Smooth,178.5937,2.6291,177.0288,199.4783
+0.36 - Curvature flow,Final Shade,0.7787,0.0334,0.7369,0.9697
+0.72 - Curvature flow,Depth,24.8403,1.4544,24.3564,35.7808
+0.72 - Curvature flow,Thickness,15.3638,0.8218,15.0943,22.7685
+0.72 - Curvature flow,Smooth,182.8076,13.1494,176.9110,257.7758
+0.72 - Curvature flow,Final Shade,0.8435,0.0553,0.7828,1.0506
+1.44 - Curvature flow,Depth,96.6471,0.6096,96.3703,102.4993
+1.44 - Curvature flow,Thickness,60.2662,0.3476,60.1287,63.5710
+1.44 - Curvature flow,Smooth,178.7388,3.7664,176.8553,207.1306
+1.44 - Curvature flow,Final Shade,0.9009,0.0362,0.8537,1.1148

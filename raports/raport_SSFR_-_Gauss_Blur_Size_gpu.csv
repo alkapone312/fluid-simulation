@@ -1,21 +1,21 @@
-Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
-Gaussian Blur - Size - 10,Depth,1.1206
-Gaussian Blur - Size - 10,Thickness,1.1636
-Gaussian Blur - Size - 10,Smooth,5.9537
-Gaussian Blur - Size - 10,Final Shade,0.7835
-Gaussian Blur - Size - 30,Depth,1.0226
-Gaussian Blur - Size - 30,Thickness,1.0566
-Gaussian Blur - Size - 30,Smooth,14.8565
-Gaussian Blur - Size - 30,Final Shade,0.7246
-Gaussian Blur - Size - 50,Depth,1.0234
-Gaussian Blur - Size - 50,Thickness,1.0573
-Gaussian Blur - Size - 50,Smooth,24.1972
-Gaussian Blur - Size - 50,Final Shade,0.7443
-Gaussian Blur - Size - 70,Depth,1.0256
-Gaussian Blur - Size - 70,Thickness,1.0566
-Gaussian Blur - Size - 70,Smooth,33.5118
-Gaussian Blur - Size - 70,Final Shade,0.7417
-Gaussian Blur - Size - 90,Depth,1.0177
-Gaussian Blur - Size - 90,Thickness,1.0583
-Gaussian Blur - Size - 90,Smooth,42.8238
-Gaussian Blur - Size - 90,Final Shade,0.7346
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas (ms),Odchylenie Std (ms),Min (ms),Max (ms)
+Gaussian Blur - Size - 10,Depth,1.7907,0.1451,1.6986,2.3468
+Gaussian Blur - Size - 10,Thickness,1.0800,0.0486,1.0529,1.6182
+Gaussian Blur - Size - 10,Smooth,5.5748,0.1854,5.4328,6.1912
+Gaussian Blur - Size - 10,Final Shade,0.7672,0.0276,0.7113,0.9537
+Gaussian Blur - Size - 30,Depth,1.7432,0.1253,1.6985,2.2270
+Gaussian Blur - Size - 30,Thickness,1.0555,0.0073,1.0528,1.1362
+Gaussian Blur - Size - 30,Smooth,14.9090,0.1435,14.8318,16.7098
+Gaussian Blur - Size - 30,Final Shade,0.7531,0.0326,0.7099,0.9102
+Gaussian Blur - Size - 50,Depth,1.7506,0.1380,1.6985,2.3070
+Gaussian Blur - Size - 50,Thickness,1.0570,0.0249,1.0531,1.4713
+Gaussian Blur - Size - 50,Smooth,24.2667,0.1406,24.1818,25.9821
+Gaussian Blur - Size - 50,Final Shade,0.7686,0.0414,0.7093,1.0675
+Gaussian Blur - Size - 70,Depth,1.7534,0.1431,1.6983,2.3028
+Gaussian Blur - Size - 70,Thickness,1.0569,0.0239,1.0528,1.4545
+Gaussian Blur - Size - 70,Smooth,33.6508,0.2244,33.5110,36.3053
+Gaussian Blur - Size - 70,Final Shade,0.7739,0.0474,0.7087,1.0303
+Gaussian Blur - Size - 90,Depth,1.7588,0.1898,1.6983,3.8385
+Gaussian Blur - Size - 90,Thickness,1.0572,0.0301,1.0528,1.5683
+Gaussian Blur - Size - 90,Smooth,42.9545,0.2243,42.8182,45.2146
+Gaussian Blur - Size - 90,Final Shade,0.7522,0.0310,0.7094,0.8878

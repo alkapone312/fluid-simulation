@@ -1,21 +1,21 @@
-Scenariusz,Nazwa Shadera (Pass),Sredni Czas na GPU (ms)
-Particle Size - 0.09 - Gauss,Depth,0.3930
-Particle Size - 0.09 - Gauss,Thickness,0.3517
-Particle Size - 0.09 - Gauss,Smooth,14.8659
-Particle Size - 0.09 - Gauss,Final Shade,0.7263
-Particle Size - 0.18 - Gauss,Depth,1.0324
-Particle Size - 0.18 - Gauss,Thickness,1.0556
-Particle Size - 0.18 - Gauss,Smooth,14.8751
-Particle Size - 0.18 - Gauss,Final Shade,0.7253
-Particle Size - 0.36 - Gauss,Depth,3.3067
-Particle Size - 0.36 - Gauss,Thickness,3.8858
-Particle Size - 0.36 - Gauss,Smooth,14.8692
-Particle Size - 0.36 - Gauss,Final Shade,0.7578
-Particle Size - 0.72 - Gauss,Depth,13.6203
-Particle Size - 0.72 - Gauss,Thickness,15.0989
-Particle Size - 0.72 - Gauss,Smooth,14.8505
-Particle Size - 0.72 - Gauss,Final Shade,0.7929
-Particle Size - 1.44 - Gauss,Depth,58.3640
-Particle Size - 1.44 - Gauss,Thickness,60.1853
-Particle Size - 1.44 - Gauss,Smooth,14.8517
-Particle Size - 1.44 - Gauss,Final Shade,0.8620
+Scenariusz,Nazwa Shadera (Pass),Sredni Czas (ms),Odchylenie Std (ms),Min (ms),Max (ms)
+0.09 - Gauss,Depth,0.5375,0.0806,0.5061,1.0118
+0.09 - Gauss,Thickness,0.3684,0.1150,0.3412,1.9912
+0.09 - Gauss,Smooth,15.5049,1.4790,14.8353,25.0348
+0.09 - Gauss,Final Shade,0.7486,0.0387,0.6940,0.9318
+0.18 - Gauss,Depth,1.7586,0.1541,1.6967,2.6181
+0.18 - Gauss,Thickness,1.0553,0.0097,1.0513,1.1587
+0.18 - Gauss,Smooth,14.9634,0.1596,14.8422,16.2485
+0.18 - Gauss,Final Shade,0.7689,0.0389,0.7132,0.9468
+0.36 - Gauss,Depth,6.3550,0.1422,6.2937,6.8798
+0.36 - Gauss,Thickness,3.8844,0.0447,3.8728,4.3937
+0.36 - Gauss,Smooth,14.9351,0.1241,14.8322,16.0523
+0.36 - Gauss,Final Shade,0.7868,0.0304,0.7290,0.9570
+0.72 - Gauss,Depth,24.4850,0.2838,24.3589,27.1507
+0.72 - Gauss,Thickness,15.1363,0.1674,15.0950,17.6566
+0.72 - Gauss,Smooth,14.9157,0.1450,14.8338,16.6872
+0.72 - Gauss,Final Shade,0.8177,0.0398,0.7669,1.0553
+1.44 - Gauss,Depth,96.6762,0.6740,96.3467,104.1758
+1.44 - Gauss,Thickness,60.2890,0.4562,60.1087,63.9810
+1.44 - Gauss,Smooth,14.9088,0.1915,14.8264,17.3015
+1.44 - Gauss,Final Shade,0.8785,0.0309,0.8301,1.0362
