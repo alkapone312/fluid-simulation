@@ -4,7 +4,7 @@ import pl.pwr.jkaplone.fluidsim.bean.Control;
 import pl.pwr.jkaplone.fluidsim.bean.ControlType;
 
 public class SimulationBean {
-    private int iterationsPerFrame = 1;
+    private int iterationsPerFrame = 0;
 
     private float gravityForce = 12.0f;
 

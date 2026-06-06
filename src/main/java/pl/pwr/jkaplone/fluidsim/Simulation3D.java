@@ -43,6 +43,7 @@ public class Simulation3D extends SimpleApplication {
         Simulation3D app = new Simulation3D();
         AppSettings settings = new AppSettings(true);
         settings.setResolution(1920, 1080);
+        settings.setRenderer(AppSettings.LWJGL_OPENGL43);
         settings.setFullscreen(true);
         settings.setVSync(false);
         app.setSettings(settings);

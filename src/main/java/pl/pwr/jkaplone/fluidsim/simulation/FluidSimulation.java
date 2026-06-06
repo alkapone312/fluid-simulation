@@ -155,7 +155,6 @@ public class FluidSimulation {
     }
 
     private void updateUniforms(float deltaTime) {
-        float r = bean.getSmoothingRadius();
 //        computeShader.setUniform("SpikyPow3ScalingFactor", (float) (10f / (Math.PI * Math.pow(r, 5))));
 //        computeShader.setUniform("SpikyPow2ScalingFactor", (float) (6f / (Math.PI * Math.pow(r, 4))));
 //        computeShader.setUniform("SpikyPow3DerivativeScalingFactor", (float) (30f / (Math.pow(r, 5) * Math.PI)));
@@ -174,7 +173,7 @@ public class FluidSimulation {
         computeShader.setUniform("targetDensity", bean.getTargetDensity());
         computeShader.setUniform("boundsSize", bean.getBoundsX(), bean.getBoundsY(), bean.getBoundsZ());
         computeShader.setUniform("numParticles", numParticles, ComputeShader.IntegerType.UNSIGNED);
-        computeShader.setUniform("smoothingRadius", r);
+        computeShader.setUniform("smoothingRadius", bean.getSmoothingRadius());
         computeShader.setUniform("deltaTime", deltaTime);
         computeShader.setUniform("gravity", 0, -bean.getGravityForce(), 0);
         computeShader.setUniform("collisionDamping", 0.8f);
